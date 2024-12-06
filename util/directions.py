@@ -11,6 +11,9 @@ class Direction2D(IntEnum):
     def turn_right(self):
         return Direction2D((self.value + 1) % 4)
 
+    def offset(self):
+        return ((0, 1), (1, 0), (0, -1), (-1, 0))[self.value]
+
 def offset_2D(direction: Direction2D) -> Tuple[int, int]:
     return ((0, 1), (1, 0), (0, -1), (-1, 0))[direction.value]
 
