@@ -57,7 +57,7 @@ def day2(fp):
 
             accept_set.add(tuple(base_state))
 
-            # These flip operations define an abelian group with the order of each element/operation being two
+            # These flip operations define an abelian group with the order of each (non identity) element/operation being two
             # Thus, doing the same action unsets it.
             if flip1:
                 base_state[0], base_state[4] = base_state[4], base_state[0]
