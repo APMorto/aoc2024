@@ -5,6 +5,11 @@ def read_grid(fp: str) -> List[str]:
         lines = f.readlines()
     return [l for line in lines if len(l:=line.strip()) > 0]
 
+def read_list_grid(fp: str) -> List[List[str]]:
+    with open(fp, 'r') as f:
+        lines = f.readlines()
+    return [list(l) for line in lines if len(l := line.strip()) > 0]
+
 def read_line_blocks(fp: str) -> List[List[str]]:
     """
     Parses groups of non-blank lines into a list of lists of those groups.

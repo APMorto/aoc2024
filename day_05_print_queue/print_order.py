@@ -63,8 +63,12 @@ def order_numbers(ordering, successors: Dict[int, Collection[int]]):
 
     # Repeatedly get the zero element
     out = []
+    chosen = None
+    for val, count in precede_counts.items():
+        if count == 0:
+            chosen = val
+            break
     for i in range(len(ordering)):
-        chosen = None
         for val, count in precede_counts.items():
             if count == 0:
                 chosen = val
@@ -120,4 +124,4 @@ if __name__ == '__main__':
     print(day2("example.txt"))
     print(day2("p1.txt"))
 
-    print(timeit.timeit(lambda: day2("p1.txt"), number=1))
+    print(timeit.timeit(lambda: day2("p1.txt"), number=1000))

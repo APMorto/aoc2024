@@ -1,0 +1,18 @@
+from enum import Enum, EnumType, IntEnum
+from typing import Tuple
+
+
+class Direction2D(IntEnum):
+    RIGHT = 0
+    DOWN = 1
+    LEFT = 2
+    UP = 3
+
+    def turn_right(self):
+        return Direction2D((self.value + 1) % 4)
+
+def offset_2D(direction: Direction2D) -> Tuple[int, int]:
+    return ((0, 1), (1, 0), (0, -1), (-1, 0))[direction.value]
+
+
+
