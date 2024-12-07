@@ -1,7 +1,8 @@
+import math
 import sys
 import timeit
 from idlelib.tree import TreeNode
-from itertools import chain
+from itertools import chain, cycle
 from typing import List, Optional
 
 from parser.parser import read_grid, read_list_grid
@@ -121,7 +122,7 @@ def check_cycle(r, c, direction, visited, grid):
 
         local_visited.add((r, c, direction))
 
-        grid[r][c] = '*'  # Mark cur pos as visited.
+        #grid[r][c] = '*'  # Mark cur pos as visited.
         ro, co = direction.offset()
 
         # Left the grid
@@ -347,6 +348,9 @@ class StateNode:
             return False
         return A.indexID >> diff == B.indexID
 
+    def cycles(self):
+        return self.rootID in StateNode.cocyclic_root_ids
+
     @staticmethod
     def coflavoured(id1, id2):
         return id1 in StateNode.cocyclic_root_ids and id2 in StateNode.cocyclic_root_ids[id1]
@@ -457,19 +461,81 @@ def day2_graph(grid: List[str]):
             state_to_node[r][c][d] = out
             return out
 
+    def loops(rr, cc, r, c, d):
+        changed_states = [(rr + d.turn_around().offset()[0], cc + d.turn_around().offset()[1], d) for d in Direction2D]  # TODO: make faster
+        changed_states_with_edges = [(state, get_node_of_state(*state)) for state in changed_states if
+                                     (0 <= state[0] < h and 0 <= state[1] < w)]
+        # print("Changed edges", changed_edges)
+
+        # Our current state. Initially we just turn right.
+        cur_state = (r, c, direction.turn_right())
+        cur_edge = get_node_of_state(*cur_state)
+
+        for iteration in range(5):
+            highest_dist = -math.inf
+            best_edge = None
+            best_state = None
+            for changed_state, changed_edge in changed_states_with_edges:
+                if cur_edge.other_downstream_of(changed_edge):
+                    highest_dist = max(highest_dist, changed_edge.dist)
+                    best_edge = changed_edge
+                    best_state = changed_state
+
+            if best_edge is None:
+                return cur_edge.cycles()
+            else:
+                cur_edge = best_edge
+                # turn right
+                a, b, d = best_state
+                cur_state = (a, b, direction.turn_right())
+
+        # Moved 4 times
+        #print("timeout ending.")
+        return True
 
     # Find initial position.
-    row = -1
-    col = -1
+    r = -1
+    c = -1
     for i in range(h):
         for j in range(w):
             if grid[i][j] == '^':
-                row = i
-                col = j
+                r= i
+                c = j
                 break
 
     direction = Direction2D.UP
-    print(row, col, direction, get_node_of_state(row, col, direction))
+
+    out = 0
+
+    while True:
+        grid[r][c] = '^'
+        ro, co = direction.offset()
+
+        if not (0 <= r + ro < h and 0 <= c + co < w):
+            break
+
+        if grid[r + ro][c + co] == '#':
+            direction = direction.turn_right()
+        else:
+            if grid[r+ro][c+co] != '^': # Cant place on start, or where we have already been.
+                fancy_cycle = loops(r+ro, c+co, r, c, direction)
+                grid[r + ro][c + co] = '#'
+                basic_cycle = check_cycle(r, c, direction, set(), grid)
+                grid[r + ro][c + co] = "."
+                if fancy_cycle and not basic_cycle:
+                    print("False cycle:")
+                    print(r, c, direction)
+                elif basic_cycle and not fancy_cycle:
+                    print("Missed cycle:", r, c, direction)
+                if fancy_cycle:
+                    out += 1
+                grid[r+ro][c+co] = '^'
+
+            # Now go forwards
+            r += ro
+            c += co
+
+    return out
 
 
 
@@ -488,7 +554,7 @@ def day2_graph(grid: List[str]):
 
 if __name__ == '__main__':
     sys.setrecursionlimit(130*130*4*8)
-    input_grid = read_grid('input')
+    input_grid = read_list_grid('input')
     print(day2_graph(input_grid))
     print(timeit.timeit(lambda: day2('input'), number=1))
     print("total recursive checks:", TOT_REC_CHECKS)
