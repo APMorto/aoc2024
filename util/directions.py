@@ -11,6 +11,9 @@ class Direction2D(IntEnum):
     def turn_right(self):
         return Direction2D((self.value + 1) % 4)
 
+    def turn_left(self):
+        return Direction2D((self.value + 3) % 4)
+
     def offset(self):
         return ((0, 1), (1, 0), (0, -1), (-1, 0))[self.value]
 

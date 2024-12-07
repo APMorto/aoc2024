@@ -1,4 +1,6 @@
+import sys
 import timeit
+from idlelib.tree import TreeNode
 from itertools import chain
 from typing import List, Optional
 
@@ -323,19 +325,160 @@ def check_cycle(r, c, direction, visited, grid):
 #   return A.indexID >> diff == B.indexID   # Check the diff-th child for equality.
 
 class StateNode:
+    cocyclic_root_ids = {}
+    OOB_root_ids = set()
+    next_state_id = 0
+
     def __init__(self, dist: int, child, rootID: int, indexID: int):
         self.dist: int = dist
         self.child: Optional[StateNode] = child
         self.rootID: int = rootID
         self.indexID: int = indexID
 
-    def downstream_of(self, other: "StateNode") -> bool:
+    def other_downstream_of(self, other: "StateNode") -> bool:
+        A = self
+        B = other
 
+        if A.rootID != B.rootID:
+            return B.dist == 0 and StateNode.coflavoured(A.rootID, B.rootID)
+
+        diff = A.dist - B.dist
+        if diff < 0:
+            return False
+        return A.indexID >> diff == B.indexID
+
+    @staticmethod
+    def coflavoured(id1, id2):
+        return id1 in StateNode.cocyclic_root_ids and id2 in StateNode.cocyclic_root_ids[id1]
+
+    def __repr__(self):
+        return f"<d: {self.dist}, rootID: {self.rootID}, indexID: {self.indexID}>"
 
 
 def day2_graph(grid: List[str]):
     h = len(grid)
     w = len(grid[0])
+
+    state_to_node: List[List[List[Optional[StateNode]]]] = [[[None] * 4 for _ in range(w)] for _ in range(h)]  # h*w*4; [r][c][d]
+
+    # Move.
+    def advance_state(r: int, c: int, d: Direction2D):
+        ro, co = d.offset()
+        if not (0 <= r + ro < h and 0 <= c + co < w):
+            return None
+
+        if grid[r + ro][c + co] == '#':
+            return r, c, d.turn_right()
+        else:
+            return r+ro, c+co, d
+
+    def obstacle_to_left(r, c, d: Direction2D):
+        ro, co = d.turn_left().offset()
+        return (0 <= r + ro < h and 0 <= c + co < w) and grid[r + ro][c + co] == '#'
+
+
+    def fill_cycle(r: int, c: int, d: Direction2D):
+        nonlocal state_to_node
+        # Dont bother with children
+        # r, c, d is actually cyclic
+        init = (r, c, d)
+        cocyclic_ids = set()
+
+        # Fill initial
+        state_to_node[r][c][d] = StateNode(0, None, StateNode.next_state_id, 0)
+        cocyclic_ids.add(StateNode.next_state_id)
+        StateNode.next_state_id += 1
+
+        # Fill rest of cycle
+        cur = advance_state(r, c, d)
+        while cur != init:
+            r, c, d = cur
+            state_to_node[r][c][d] = StateNode(0, None, StateNode.next_state_id, 0)
+            cocyclic_ids.add(StateNode.next_state_id)
+            StateNode.next_state_id += 1
+            cur = advance_state(r, c, d)
+
+        # Mark all as cocyclic
+        for a in cocyclic_ids:
+            StateNode.cocyclic_root_ids[a] = cocyclic_ids
+
+    def get_node_of_state(r: int, c: int, d: Direction2D, seen=None) -> StateNode:
+        #print("Recursing", r, c, d)
+        if state_to_node[r][c][d] is not None:
+            #print("hit cache")
+            return state_to_node[r][c][d]
+
+        # We need to be able to check for cycles.
+        seen = set() if seen is None else seen
+        seen.add((r, c, d))
+        out = None
+
+        # Actually compute the value.
+        # The point which is turned on has where it will go as its id
+        new_state = advance_state(r, c, d)
+
+        # Check for cycles
+        if new_state in seen:
+            fill_cycle(*new_state)
+            #seen.clear()
+
+        # If terminal, we dont have to worry about anything else!
+        if new_state is None:
+            node = StateNode(1, None, StateNode.next_state_id, 0)
+            StateNode.OOB_root_ids.add(StateNode.next_state_id)
+            StateNode.next_state_id += 1
+            #print("is terminal")
+            state_to_node[r][c][d] = node
+            return node
+
+        rr, cc, dd = new_state
+        # If it turns, thats a new state!
+        if dd != d:
+            next_node = get_node_of_state(rr, cc, dd, seen)
+            node = StateNode(next_node.dist+1, next_node, next_node.rootID, (next_node.indexID << 1) + 1)
+            out = node
+
+        # If it does not turn, it might also need to branch.
+        # TODO: check if it might turn
+        # elif WOULD_BRANCH
+        # That is, what exists to the left of the new state is an obstacle
+        elif obstacle_to_left(rr, cc, dd):
+            next_node = get_node_of_state(rr, cc, dd, seen)
+            node = StateNode(next_node.dist+1, next_node, next_node.rootID, (next_node.indexID << 1))   # + 0
+            out = node
+
+        else:
+            # It is a new valid state which is not branching
+            next_node = get_node_of_state(rr, cc, dd, seen)
+            out = next_node
+
+        # We might have then later been marked as a cycle.
+        if state_to_node[r][c][d] is not None:
+            return state_to_node[r][c][d]
+        else:
+            state_to_node[r][c][d] = out
+            return out
+
+
+    # Find initial position.
+    row = -1
+    col = -1
+    for i in range(h):
+        for j in range(w):
+            if grid[i][j] == '^':
+                row = i
+                col = j
+                break
+
+    direction = Direction2D.UP
+    print(row, col, direction, get_node_of_state(row, col, direction))
+
+
+
+
+
+
+
 
 
 
@@ -346,6 +489,9 @@ def day2_graph(grid: List[str]):
 
 
 if __name__ == '__main__':
+    sys.setrecursionlimit(130*130*4*8)
+    input_grid = read_grid('input')
+    print(day2_graph(input_grid))
     print(timeit.timeit(lambda: day2('input'), number=1))
     print("total recursive checks:", TOT_REC_CHECKS)
     print("total check steps:", TOT_CHECK_STEPS)
