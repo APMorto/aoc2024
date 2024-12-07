@@ -439,8 +439,6 @@ def day2_graph(grid: List[str]):
             out = node
 
         # If it does not turn, it might also need to branch.
-        # TODO: check if it might turn
-        # elif WOULD_BRANCH
         # That is, what exists to the left of the new state is an obstacle
         elif obstacle_to_left(rr, cc, dd):
             next_node = get_node_of_state(rr, cc, dd, seen)
