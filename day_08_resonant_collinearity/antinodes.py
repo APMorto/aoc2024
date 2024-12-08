@@ -41,11 +41,47 @@ def antinode_positions_for_pair(r1, c1, r2, c2, h, w):
         (r2 + dr, c2 + dc))
     )
 
+def antinode_positions_for_pair_p2(r1, c1, r2, c2, h, w):
+    dr = r2 - r1
+    dc = c2 - c1
+
+    n_steps = math.gcd(abs(dr), abs(dc))
+    r_step, c_step = dr // n_steps, dc // n_steps
+
+    # Go off in both directions, and in between. And on top of them.
+    # off p1
+    r, c = r1, c1
+    while 0 <= r < h and 0 <= c < w:
+        yield r, c
+        r -= r_step
+        c -= c_step
+
+    # off p2
+    r, c = r2, c2
+    while 0 <= r < h and 0 <= c < w:
+        yield r, c
+        r += r_step
+        c += c_step
+
+    # between
+    r, c = r1 + r_step, c1 + c_step
+    while r != r2 and c != c2:
+        yield r, c
+        r += r_step
+        c += c_step
+
 def antinode_positions_for_frequency(frequency_positions: List[tuple], acc: set, h, w):
     n = len(frequency_positions)
     for i in range(n):
         for j in range(i + 1, n):
             acc.update(antinode_positions_for_pair(*frequency_positions[i], *frequency_positions[j], h, w))
+
+def antinode_positions_for_frequency_p2(frequency_positions: List[tuple], acc: set, h, w):
+    n = len(frequency_positions)
+    for i in range(n):
+        for j in range(i + 1, n):
+            acc.update(antinode_positions_for_pair_p2(*frequency_positions[i], *frequency_positions[j], h, w))
+
 
 def part1(grid: List[str]):
     h = len(grid)
@@ -64,9 +100,29 @@ def part1(grid: List[str]):
     return len(antinode_positions)
 
 
+def part2(grid: List[str]):
+    h = len(grid)
+    w = len(grid[0])
+
+    # Is distance Euclidean distance?
+    all_positions = read_antenna_positions(grid)
+
+    antinode_positions = set()
+    for char, positions in all_positions.items():
+        antinode_positions_for_frequency_p2(positions, antinode_positions, h, w)
+
+    #print(antinode_positions)
+    #display_antinode_locations(grid, antinode_positions)
+
+    return len(antinode_positions)
+
+
 if __name__ == '__main__':
-    get_results("P1 example", part1, read_grid, "example.txt")
-    get_results("P1", part1, read_grid, "input.txt")
+    #get_results("P1 example", part1, read_grid, "example.txt")
+    #get_results("P1", part1, read_grid, "input.txt")
+
+    get_results("P2 example", part2, read_grid, "example.txt")
+    get_results("P2", part2, read_grid, "input.txt")
 
 
 
