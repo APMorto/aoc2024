@@ -6,6 +6,7 @@ from typing import List, Optional
 
 from parser.parser import read_grid, read_list_grid
 from util.directions import Direction2D
+from util.timer import time_with_output, get_results
 
 TOT_CHECK_STEPS = 0
 TOT_REC_CHECKS = 0
@@ -422,7 +423,7 @@ def day2_graph(grid: List[str]):
         # Check for cycles
         if new_state in seen:
             fill_cycle(*new_state)
-            #seen.clear()
+            seen.clear()
 
         # If terminal, we dont have to worry about anything else!
         if new_state is None:
@@ -485,7 +486,8 @@ def day2_graph(grid: List[str]):
         cur_state = (r, c, d.turn_right())
         cur_edge = get_node_of_state(*cur_state)
 
-        for iteration in range(5):
+        # I do not know why 3 works for my input. I guess we already did 1 edge change?
+        for iteration in range(3):
             highest_dist = -math.inf
             best_edge = None
             best_state = None
@@ -495,7 +497,6 @@ def day2_graph(grid: List[str]):
                         highest_dist = max(highest_dist, changed_edge.dist)
                         best_edge = changed_edge
                         best_state = changed_state
-
 
             if best_edge is None:
                 return cur_edge.cycles()
@@ -540,6 +541,14 @@ def day2_graph(grid: List[str]):
             r += ro
             c += co
 
+    #calculated = 0
+    #for r in range(h):
+    #    for c in range(w):
+    #        for d in Direction2D:
+    #            if state_to_node[r][c][d] is not None:
+    #                calculated += 1
+    #print("Cached", calculated, "states of roughly", w * h * 4, "possible states")
+
     return out
 
 
@@ -551,20 +560,25 @@ def day2_graph(grid: List[str]):
 
 
 if __name__ == '__main__':
-    sys.setrecursionlimit(130*130*4*8)
-    input_grid = read_list_grid('input')
-    print(timeit.timeit(lambda: print(day2_graph(input_grid)), number=1))
-    #print(day2_graph(input_grid))
-    print(timeit.timeit(lambda: day2('input'), number=1))
-    print("total recursive checks:", TOT_REC_CHECKS)
-    print("total check steps:", TOT_CHECK_STEPS)
-    print("average check steps:", TOT_CHECK_STEPS / TOT_REC_CHECKS)
-    print("max turns", MAX_TURNS)
+    sys.setrecursionlimit(130*130*4*2)
+    #input_grid = read_list_grid('input')
+    #p2_result, p2_duration = time_with_output(lambda: day2_graph(input_grid))
+    #print("P2")
+    #print(p2_result)
+    #print(f"Solved with graph method in {p2_duration} seconds.")
+    get_results("Day 06 P2 (Graph)", day2_graph, read_list_grid, "input")
 
-    print(day1('example.txt'))
-    print(day1('input'))
-    print(day2('example.txt'))
-    print(day2('input'))
+    #print(timeit.timeit(lambda: print(day2_graph(input_grid)), number=1))
+    #print(timeit.timeit(lambda: day2('input'), number=1))
+    #print("total recursive checks:", TOT_REC_CHECKS)
+    #print("total check steps:", TOT_CHECK_STEPS)
+    #print("average check steps:", TOT_CHECK_STEPS / TOT_REC_CHECKS)
+    #print("max turns", MAX_TURNS)
+#
+    #print(day1('example.txt'))
+    #print(day1('input'))
+    #print(day2('example.txt'))
+    #print(day2('input'))
 
 
 
