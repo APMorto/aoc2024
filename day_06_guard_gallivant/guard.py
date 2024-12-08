@@ -8,6 +8,257 @@ from parser.parser import read_grid, read_list_grid
 from util.directions import Direction2D
 from util.timer import time_with_output, get_results
 
+# Gaze upon the massive block of commends below to see the rationale for this.
+# Basically, we have a graph.
+# adding an obstacle changes 4 connections in the graph
+# and we have a quick method of checking whether one node is 'after' another node.
+
+class StateNode:
+    cocyclic_root_ids = {}
+    OOB_root_ids = set()
+    next_state_id = 0
+
+    def __init__(self, dist: int, child, rootID: int, indexID: int):
+        self.dist: int = dist
+        self.child: Optional[StateNode] = child
+        self.rootID: int = rootID
+        self.indexID: int = indexID
+
+    def other_downstream_of(self, other: "StateNode") -> bool:
+        A = self
+        B = other
+
+        if A.rootID != B.rootID:
+            return B.dist == 0 and StateNode.coflavoured(A.rootID, B.rootID)
+
+        diff = A.dist - B.dist
+        if diff < 0:
+            return False
+        return (A.indexID >> diff) == B.indexID
+
+    def cycles(self):
+        assert (self.rootID in StateNode.cocyclic_root_ids) ^ (self.rootID in StateNode.OOB_root_ids), f"{self.rootID in StateNode.cocyclic_root_ids}, {self.rootID in StateNode.OOB_root_ids}"
+        return self.rootID in StateNode.cocyclic_root_ids
+
+    @staticmethod
+    def coflavoured(id1, id2):
+        return id1 in StateNode.cocyclic_root_ids and id2 in StateNode.cocyclic_root_ids[id1]
+
+    def __repr__(self):
+        return f"<d: {self.dist}, rootID: {self.rootID}, indexID: {self.indexID}>"
+
+
+def day2_graph(grid: List[str]):
+    h = len(grid)
+    w = len(grid[0])
+
+    state_to_node: List[List[List[Optional[StateNode]]]] = [[[None] * 4 for _ in range(w)] for _ in range(h)]  # h*w*4; [r][c][d]
+
+    # Move.
+    def advance_state(r: int, c: int, d: Direction2D):
+        """Move forwards or turn."""
+        ro, co = d.offset()
+        if not (0 <= r + ro < h and 0 <= c + co < w):
+            return None
+
+        if grid[r + ro][c + co] == '#':
+            return r, c, d.turn_right()
+        else:
+            return r+ro, c+co, d
+
+    def obstacle_to_left(r, c, d: Direction2D):
+        """For our branching logic, we need to know this, as had we approached from the right, we would have turned right."""
+        ro, co = d.turn_left().offset()
+        return (0 <= r + ro < h and 0 <= c + co < w) and grid[r + ro][c + co] == '#'
+
+
+    def fill_cycle(r: int, c: int, d: Direction2D):
+        """Upon hitting a cycle, we then fill it in with the special final state."""
+        nonlocal state_to_node
+        # Dont bother with children
+        # r, c, d is actually cyclic
+        init = (r, c, d)
+        cocyclic_ids = set()
+
+        # Fill initial
+        state_to_node[r][c][d] = StateNode(0, None, StateNode.next_state_id, 0)
+        cocyclic_ids.add(StateNode.next_state_id)
+        StateNode.next_state_id += 1
+
+        # Fill rest of cycle
+        cur = advance_state(r, c, d)
+        while cur != init:
+            r, c, d = cur
+            state_to_node[r][c][d] = StateNode(0, None, StateNode.next_state_id, 0)
+            cocyclic_ids.add(StateNode.next_state_id)
+            StateNode.next_state_id += 1
+            cur = advance_state(r, c, d)
+
+        # Mark all as cocyclic
+        for a in cocyclic_ids:
+            StateNode.cocyclic_root_ids[a] = cocyclic_ids
+
+    def get_node_of_state(r: int, c: int, d: Direction2D, seen=None) -> StateNode:
+        """
+        Lazily evaluate what 'node' of our graph is here.
+        :param r: Row
+        :param c: Column
+        :param d: Direction
+        :param seen: What we have seen thusfar
+        :return: The node
+        """
+        if state_to_node[r][c][d] is not None:
+            return state_to_node[r][c][d]
+
+        # We need to be able to check for cycles.
+        seen = set() if seen is None else seen
+        # Check for cycles
+        if (r, c, d) in seen:
+            fill_cycle(r, c, d)
+            seen.clear()
+            return state_to_node[r][c][d]
+        seen.add((r, c, d))
+
+        out = None
+
+        # Actually compute the value.
+        # The point which is turned on has where it will go as its id
+        new_state = advance_state(r, c, d)
+
+        # If terminal, we dont have to worry about anything else!
+        if new_state is None:
+            node = StateNode(1, None, StateNode.next_state_id, 0)
+            StateNode.OOB_root_ids.add(StateNode.next_state_id)
+            StateNode.next_state_id += 1
+            state_to_node[r][c][d] = node
+            return node
+
+        rr, cc, dd = new_state
+        next_node = get_node_of_state(rr, cc, dd, seen)
+        # If it turns, thats a new state!
+        if dd != d:
+            out = StateNode(next_node.dist+1, next_node, next_node.rootID, (next_node.indexID << 1) + 1)
+
+        # If it does not turn, it might also need to branch.
+        # That is, what exists to the left of the new state is an obstacle
+        elif obstacle_to_left(rr, cc, dd):
+            out = StateNode(next_node.dist+1, next_node, next_node.rootID, (next_node.indexID << 1))   # + 0
+
+        else:
+            # It is a new valid state which is not branching
+            out = next_node
+
+        # We might have then later been marked as a cycle.
+        if state_to_node[r][c][d] is not None:
+            return state_to_node[r][c][d]
+        else:
+            state_to_node[r][c][d] = out
+            return out
+
+    def check_downstream_of(state1, state2):
+        r1, c1, d1 = state1
+        r2, c2, d2 = state2
+        seen = set()
+
+        while (r1, c1, d1) != state2:
+            if (r1, c1, d1) in seen:
+                #print("What should be downstraem is not")
+                return False
+            seen.add((r1, c1, d1))
+            new_state = advance_state(r1, c1, d1)
+            if new_state is None:
+                return False
+            r1, c1, d1 = new_state
+        return True
+
+
+    def loops(rr, cc, r, c, d):
+        """
+        Check if after placing on obstacle at (rr, cc) while being in state (r, c, d), we would cycle forever.
+        :param rr: row of obstacle
+        :param cc: col of obstacle
+        :param r: row where we were
+        :param c: col where we were
+        :param d: direction initially facing
+        """
+        changed_states = [(rr + dd.turn_around().offset()[0], cc + dd.turn_around().offset()[1], dd) for dd in Direction2D]
+        changed_states_with_edges = [(state, get_node_of_state(*state)) for state in changed_states if
+                                     (0 <= state[0] < h and 0 <= state[1] < w)]
+
+        # Our current state. Initially we just turn right.
+        cur_state = (r, c, d.turn_right())
+        cur_edge = get_node_of_state(*cur_state)
+
+        # The below takes ~0.01s total.
+
+        # I do not know why 3 works for my input. I guess we already did 1 edge change?
+        for iteration in range(3):
+            highest_dist = -math.inf
+            best_edge = None
+            best_state = None
+            for changed_state, changed_edge in changed_states_with_edges:
+                if cur_edge.other_downstream_of(changed_edge):
+                    if changed_edge.dist > highest_dist:
+                        highest_dist = max(highest_dist, changed_edge.dist)
+                        best_edge = changed_edge
+                        best_state = changed_state
+
+            if best_edge is None:
+                return cur_edge.cycles()
+            else:
+                # Now, from the best state, we need to turn right.
+                new_state = best_state[0], best_state[1], best_state[2].turn_right()
+                cur_state = new_state
+                cur_edge = get_node_of_state(*cur_state)
+
+        # We have passed through these modified edges at least 4 times.
+        return True
+
+    # Find initial position.
+    r = -1
+    c = -1
+    for i in range(h):
+        for j in range(w):
+            if grid[i][j] == '^':
+                r= i
+                c = j
+                break
+    direction = Direction2D.UP
+
+    out = 0
+
+    while True:
+        grid[r][c] = '^'
+        ro, co = direction.offset()
+
+        if not (0 <= r + ro < h and 0 <= c + co < w):
+            break
+
+        if grid[r + ro][c + co] == '#':
+            direction = direction.turn_right()
+        else:
+            # '^' marks already visited tiles, which cannot be placed on again (as we already hit it)
+            if grid[r+ro][c+co] != '^':
+                # Perform the fancy graph based cycle checking.
+                if loops(r+ro, c+co, r, c, direction):
+                    out += 1
+                grid[r+ro][c+co] = '^'
+
+            # Now go forwards
+            r += ro
+            c += co
+
+    #calculated = 0
+    #for r in range(h):
+    #    for c in range(w):
+    #        for d in Direction2D:
+    #            if state_to_node[r][c][d] is not None:
+    #                calculated += 1
+    #print("Cached", calculated, "states of roughly", w * h * 4, "possible states")
+
+    return out
+
+
 TOT_CHECK_STEPS = 0
 TOT_REC_CHECKS = 0
 MAX_TURNS = 0
@@ -324,232 +575,6 @@ def check_cycle(r, c, direction, visited, grid):
 #   if diff < 0:
 #       return False
 #   return A.indexID >> diff == B.indexID   # Check the diff-th child for equality.
-
-class StateNode:
-    cocyclic_root_ids = {}
-    OOB_root_ids = set()
-    next_state_id = 0
-
-    def __init__(self, dist: int, child, rootID: int, indexID: int):
-        self.dist: int = dist
-        self.child: Optional[StateNode] = child
-        self.rootID: int = rootID
-        self.indexID: int = indexID
-
-    def other_downstream_of(self, other: "StateNode") -> bool:
-        A = self
-        B = other
-
-        if A.rootID != B.rootID:
-            return B.dist == 0 and StateNode.coflavoured(A.rootID, B.rootID)
-
-        diff = A.dist - B.dist
-        if diff < 0:
-            return False
-        return (A.indexID >> diff) == B.indexID
-
-    def cycles(self):
-        assert (self.rootID in StateNode.cocyclic_root_ids) ^ (self.rootID in StateNode.OOB_root_ids), f"{self.rootID in StateNode.cocyclic_root_ids}, {self.rootID in StateNode.OOB_root_ids}"
-        return self.rootID in StateNode.cocyclic_root_ids
-
-    @staticmethod
-    def coflavoured(id1, id2):
-        return id1 in StateNode.cocyclic_root_ids and id2 in StateNode.cocyclic_root_ids[id1]
-
-    def __repr__(self):
-        return f"<d: {self.dist}, rootID: {self.rootID}, indexID: {self.indexID}>"
-
-
-def day2_graph(grid: List[str]):
-    h = len(grid)
-    w = len(grid[0])
-
-    state_to_node: List[List[List[Optional[StateNode]]]] = [[[None] * 4 for _ in range(w)] for _ in range(h)]  # h*w*4; [r][c][d]
-
-    # Move.
-    def advance_state(r: int, c: int, d: Direction2D):
-        ro, co = d.offset()
-        if not (0 <= r + ro < h and 0 <= c + co < w):
-            return None
-
-        if grid[r + ro][c + co] == '#':
-            return r, c, d.turn_right()
-        else:
-            return r+ro, c+co, d
-
-    def obstacle_to_left(r, c, d: Direction2D):
-        ro, co = d.turn_left().offset()
-        return (0 <= r + ro < h and 0 <= c + co < w) and grid[r + ro][c + co] == '#'
-
-
-    def fill_cycle(r: int, c: int, d: Direction2D):
-        nonlocal state_to_node
-        # Dont bother with children
-        # r, c, d is actually cyclic
-        init = (r, c, d)
-        cocyclic_ids = set()
-
-        # Fill initial
-        state_to_node[r][c][d] = StateNode(0, None, StateNode.next_state_id, 0)
-        cocyclic_ids.add(StateNode.next_state_id)
-        StateNode.next_state_id += 1
-
-        # Fill rest of cycle
-        cur = advance_state(r, c, d)
-        while cur != init:
-            r, c, d = cur
-            state_to_node[r][c][d] = StateNode(0, None, StateNode.next_state_id, 0)
-            cocyclic_ids.add(StateNode.next_state_id)
-            StateNode.next_state_id += 1
-            cur = advance_state(r, c, d)
-
-        # Mark all as cocyclic
-        for a in cocyclic_ids:
-            StateNode.cocyclic_root_ids[a] = cocyclic_ids
-
-    def get_node_of_state(r: int, c: int, d: Direction2D, seen=None) -> StateNode:
-        if state_to_node[r][c][d] is not None:
-            return state_to_node[r][c][d]
-
-        # We need to be able to check for cycles.
-        seen = set() if seen is None else seen
-        # Check for cycles
-        if (r, c, d) in seen:
-            fill_cycle(r, c, d)
-            seen.clear()
-            return state_to_node[r][c][d]
-        seen.add((r, c, d))
-
-        out = None
-
-        # Actually compute the value.
-        # The point which is turned on has where it will go as its id
-        new_state = advance_state(r, c, d)
-
-        # If terminal, we dont have to worry about anything else!
-        if new_state is None:
-            node = StateNode(1, None, StateNode.next_state_id, 0)
-            StateNode.OOB_root_ids.add(StateNode.next_state_id)
-            StateNode.next_state_id += 1
-            state_to_node[r][c][d] = node
-            return node
-
-        rr, cc, dd = new_state
-        next_node = get_node_of_state(rr, cc, dd, seen)
-        # If it turns, thats a new state!
-        if dd != d:
-            out = StateNode(next_node.dist+1, next_node, next_node.rootID, (next_node.indexID << 1) + 1)
-
-        # If it does not turn, it might also need to branch.
-        # That is, what exists to the left of the new state is an obstacle
-        elif obstacle_to_left(rr, cc, dd):
-            out = StateNode(next_node.dist+1, next_node, next_node.rootID, (next_node.indexID << 1))   # + 0
-
-        else:
-            # It is a new valid state which is not branching
-            out = next_node
-
-        # We might have then later been marked as a cycle.
-        if state_to_node[r][c][d] is not None:
-            return state_to_node[r][c][d]
-        else:
-            state_to_node[r][c][d] = out
-            return out
-
-    def check_downstream_of(state1, state2):
-        r1, c1, d1 = state1
-        r2, c2, d2 = state2
-        seen = set()
-
-        while (r1, c1, d1) != state2:
-            if (r1, c1, d1) in seen:
-                #print("What should be downstraem is not")
-                return False
-            seen.add((r1, c1, d1))
-            new_state = advance_state(r1, c1, d1)
-            if new_state is None:
-                return False
-            r1, c1, d1 = new_state
-        return True
-
-
-    def loops(rr, cc, r, c, d):
-        # Old method works here. We have the correct parameters.
-        changed_states = [(rr + dd.turn_around().offset()[0], cc + dd.turn_around().offset()[1], dd) for dd in Direction2D]
-        changed_states_with_edges = [(state, get_node_of_state(*state)) for state in changed_states if
-                                     (0 <= state[0] < h and 0 <= state[1] < w)]
-
-        # Our current state. Initially we just turn right.
-        cur_state = (r, c, d.turn_right())
-        cur_edge = get_node_of_state(*cur_state)
-
-        # The below takes ~0.01s total.
-
-        # I do not know why 3 works for my input. I guess we already did 1 edge change?
-        for iteration in range(3):
-            highest_dist = -math.inf
-            best_edge = None
-            best_state = None
-            for changed_state, changed_edge in changed_states_with_edges:
-                if cur_edge.other_downstream_of(changed_edge):
-                    if changed_edge.dist > highest_dist:
-                        highest_dist = max(highest_dist, changed_edge.dist)
-                        best_edge = changed_edge
-                        best_state = changed_state
-
-            if best_edge is None:
-                return cur_edge.cycles()
-            else:
-                # Now, from the best state, we need to turn right.
-                new_state = best_state[0], best_state[1], best_state[2].turn_right()
-                cur_state = new_state
-                cur_edge = get_node_of_state(*cur_state)
-
-        # We have passed through these modified edges at least 4 times.
-        return True
-
-    # Find initial position.
-    r = -1
-    c = -1
-    for i in range(h):
-        for j in range(w):
-            if grid[i][j] == '^':
-                r= i
-                c = j
-                break
-
-    direction = Direction2D.UP
-    out = 0
-
-    while True:
-        grid[r][c] = '^'
-        ro, co = direction.offset()
-
-        if not (0 <= r + ro < h and 0 <= c + co < w):
-            break
-
-        if grid[r + ro][c + co] == '#':
-            direction = direction.turn_right()
-        else:
-            if grid[r+ro][c+co] != '^': # Cant place on start, or where we have already been.
-                if loops(r+ro, c+co, r, c, direction):
-                    out += 1
-                grid[r+ro][c+co] = '^'
-
-            # Now go forwards
-            r += ro
-            c += co
-
-    #calculated = 0
-    #for r in range(h):
-    #    for c in range(w):
-    #        for d in Direction2D:
-    #            if state_to_node[r][c][d] is not None:
-    #                calculated += 1
-    #print("Cached", calculated, "states of roughly", w * h * 4, "possible states")
-
-    return out
-
 
 
 if __name__ == '__main__':
