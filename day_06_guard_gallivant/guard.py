@@ -413,17 +413,18 @@ def day2_graph(grid: List[str]):
 
         # We need to be able to check for cycles.
         seen = set() if seen is None else seen
+        # Check for cycles
+        if (r, c, d) in seen:
+            fill_cycle(r, c, d)
+            seen.clear()
+            return state_to_node[r][c][d]
         seen.add((r, c, d))
+
         out = None
 
         # Actually compute the value.
         # The point which is turned on has where it will go as its id
         new_state = advance_state(r, c, d)
-
-        # Check for cycles
-        if new_state in seen:
-            fill_cycle(*new_state)
-            seen.clear()
 
         # If terminal, we dont have to worry about anything else!
         if new_state is None:
@@ -434,22 +435,18 @@ def day2_graph(grid: List[str]):
             return node
 
         rr, cc, dd = new_state
+        next_node = get_node_of_state(rr, cc, dd, seen)
         # If it turns, thats a new state!
         if dd != d:
-            next_node = get_node_of_state(rr, cc, dd, seen)
-            node = StateNode(next_node.dist+1, next_node, next_node.rootID, (next_node.indexID << 1) + 1)
-            out = node
+            out = StateNode(next_node.dist+1, next_node, next_node.rootID, (next_node.indexID << 1) + 1)
 
         # If it does not turn, it might also need to branch.
         # That is, what exists to the left of the new state is an obstacle
         elif obstacle_to_left(rr, cc, dd):
-            next_node = get_node_of_state(rr, cc, dd, seen)
-            node = StateNode(next_node.dist+1, next_node, next_node.rootID, (next_node.indexID << 1))   # + 0
-            out = node
+            out = StateNode(next_node.dist+1, next_node, next_node.rootID, (next_node.indexID << 1))   # + 0
 
         else:
             # It is a new valid state which is not branching
-            next_node = get_node_of_state(rr, cc, dd, seen)
             out = next_node
 
         # We might have then later been marked as a cycle.
@@ -478,13 +475,15 @@ def day2_graph(grid: List[str]):
 
     def loops(rr, cc, r, c, d):
         # Old method works here. We have the correct parameters.
-        changed_states = [(rr + dd.turn_around().offset()[0], cc + dd.turn_around().offset()[1], dd) for dd in Direction2D]  # TODO: make faster
+        changed_states = [(rr + dd.turn_around().offset()[0], cc + dd.turn_around().offset()[1], dd) for dd in Direction2D]
         changed_states_with_edges = [(state, get_node_of_state(*state)) for state in changed_states if
                                      (0 <= state[0] < h and 0 <= state[1] < w)]
 
         # Our current state. Initially we just turn right.
         cur_state = (r, c, d.turn_right())
         cur_edge = get_node_of_state(*cur_state)
+
+        # The below takes ~0.01s total.
 
         # I do not know why 3 works for my input. I guess we already did 1 edge change?
         for iteration in range(3):
