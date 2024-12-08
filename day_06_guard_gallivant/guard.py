@@ -1,12 +1,11 @@
 import math
 import sys
 import timeit
-from idlelib.tree import TreeNode
-from itertools import chain, cycle
+from itertools import chain
 from typing import List, Optional
 
 from parser.parser import read_grid, read_list_grid
-from util.directions import Direction2D, offset_2D
+from util.directions import Direction2D
 
 TOT_CHECK_STEPS = 0
 TOT_REC_CHECKS = 0
@@ -408,9 +407,7 @@ def day2_graph(grid: List[str]):
             StateNode.cocyclic_root_ids[a] = cocyclic_ids
 
     def get_node_of_state(r: int, c: int, d: Direction2D, seen=None) -> StateNode:
-        #print("Recursing", r, c, d)
         if state_to_node[r][c][d] is not None:
-            #print("hit cache")
             return state_to_node[r][c][d]
 
         # We need to be able to check for cycles.
@@ -432,7 +429,6 @@ def day2_graph(grid: List[str]):
             node = StateNode(1, None, StateNode.next_state_id, 0)
             StateNode.OOB_root_ids.add(StateNode.next_state_id)
             StateNode.next_state_id += 1
-            #print("is terminal")
             state_to_node[r][c][d] = node
             return node
 
@@ -479,50 +475,31 @@ def day2_graph(grid: List[str]):
         return True
 
 
-
     def loops(rr, cc, r, c, d):
-        # Just fucking do the old method
-        #grid[rr][cc] = '#'
-        #out = check_cycle(r, c, d, set(), grid)
-        #grid[rr][cc] = '^'
-        #return out
         # Old method works here. We have the correct parameters.
-        print("Checking looping of", rr, cc, r, c, d)
-
         changed_states = [(rr + dd.turn_around().offset()[0], cc + dd.turn_around().offset()[1], dd) for dd in Direction2D]  # TODO: make faster
         changed_states_with_edges = [(state, get_node_of_state(*state)) for state in changed_states if
                                      (0 <= state[0] < h and 0 <= state[1] < w)]
-        # print("Changed edges", changed_edges)
 
         # Our current state. Initially we just turn right.
         cur_state = (r, c, d.turn_right())
         cur_edge = get_node_of_state(*cur_state)
 
         for iteration in range(5):
-            print("Cur edge", cur_edge)
             highest_dist = -math.inf
             best_edge = None
-            #best_state = None
+            best_state = None
             for changed_state, changed_edge in changed_states_with_edges:
                 if cur_edge.other_downstream_of(changed_edge):
-                    assert check_downstream_of(cur_state, changed_state)
                     if changed_edge.dist > highest_dist:
                         highest_dist = max(highest_dist, changed_edge.dist)
                         best_edge = changed_edge
                         best_state = changed_state
-                    elif changed_edge.dist == highest_dist:
-                        print("Equal dist.")
-                else:
-                    assert not check_downstream_of(cur_state, changed_state)
+
 
             if best_edge is None:
                 return cur_edge.cycles()
             else:
-                print("Moving to best state:", best_state)
-                #cur_edge = best_edge
-                # turn right
-                #a, b, d = best_state
-                #cur_state = (a, b, d.turn_right())
                 # Now, from the best state, we need to turn right.
                 new_state = best_state[0], best_state[1], best_state[2].turn_right()
                 cur_state = new_state
@@ -542,23 +519,9 @@ def day2_graph(grid: List[str]):
                 break
 
     direction = Direction2D.UP
-
     out = 0
 
-    # So the original cycling thing is still working jsut fine.
-    #for r_ in range(h):
-    #    for c_ in range(w):
-    #        if grid[r][c] == '#':
-    #            continue
-    #        for d_ in Direction2D:
-    #            if get_node_of_state(r_, c_, d_).cycles() ^ check_cycle(r_, c_, d_, set(), grid):
-    #                print("Fancy graph says cycle when we dont")
-    #                print(get_node_of_state(r_, c_, d_).cycles())
-
-    out_states = set()
-
     while True:
-        assert grid[r][c] != '#'
         grid[r][c] = '^'
         ro, co = direction.offset()
 
@@ -569,19 +532,7 @@ def day2_graph(grid: List[str]):
             direction = direction.turn_right()
         else:
             if grid[r+ro][c+co] != '^': # Cant place on start, or where we have already been.
-                fancy_cycle = loops(r+ro, c+co, r, c, direction)
-                grid[r + ro][c + co] = '#'
-                basic_cycle = check_cycle(r, c, direction, set(), grid)
-                grid[r + ro][c + co] = "."
-                if fancy_cycle and not basic_cycle:
-                    #print("False cycle:")
-                    #print(r, c, direction)
-                    pass
-                elif basic_cycle and not fancy_cycle:
-                    #print("Missed cycle:", r, c, direction)
-                    pass
-                if fancy_cycle:
-                    out_states.add((r+ro, c+co))
+                if loops(r+ro, c+co, r, c, direction):
                     out += 1
                 grid[r+ro][c+co] = '^'
 
@@ -589,7 +540,6 @@ def day2_graph(grid: List[str]):
             r += ro
             c += co
 
-    print(len(out_states))
     return out
 
 
@@ -600,18 +550,11 @@ def day2_graph(grid: List[str]):
 
 
 
-
-
-
-
-
-
-
-
 if __name__ == '__main__':
     sys.setrecursionlimit(130*130*4*8)
     input_grid = read_list_grid('input')
-    print(day2_graph(input_grid))
+    print(timeit.timeit(lambda: print(day2_graph(input_grid)), number=1))
+    #print(day2_graph(input_grid))
     print(timeit.timeit(lambda: day2('input'), number=1))
     print("total recursive checks:", TOT_REC_CHECKS)
     print("total check steps:", TOT_CHECK_STEPS)
