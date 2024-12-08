@@ -346,9 +346,10 @@ class StateNode:
         diff = A.dist - B.dist
         if diff < 0:
             return False
-        return A.indexID >> diff == B.indexID
+        return (A.indexID >> diff) == B.indexID
 
     def cycles(self):
+        assert (self.rootID in StateNode.cocyclic_root_ids) ^ (self.rootID in StateNode.OOB_root_ids), f"{self.rootID in StateNode.cocyclic_root_ids}, {self.rootID in StateNode.OOB_root_ids}"
         return self.rootID in StateNode.cocyclic_root_ids
 
     @staticmethod
@@ -461,36 +462,73 @@ def day2_graph(grid: List[str]):
             state_to_node[r][c][d] = out
             return out
 
+    def check_downstream_of(state1, state2):
+        r1, c1, d1 = state1
+        r2, c2, d2 = state2
+        seen = set()
+
+        while (r1, c1, d1) != state2:
+            if (r1, c1, d1) in seen:
+                #print("What should be downstraem is not")
+                return False
+            seen.add((r1, c1, d1))
+            new_state = advance_state(r1, c1, d1)
+            if new_state is None:
+                return False
+            r1, c1, d1 = new_state
+        return True
+
+
+
     def loops(rr, cc, r, c, d):
-        changed_states = [(rr + d.turn_around().offset()[0], cc + d.turn_around().offset()[1], d) for d in Direction2D]  # TODO: make faster
+        # Just fucking do the old method
+        #grid[rr][cc] = '#'
+        #out = check_cycle(r, c, d, set(), grid)
+        #grid[rr][cc] = '^'
+        #return out
+        # Old method works here. We have the correct parameters.
+        print("Checking looping of", rr, cc, r, c, d)
+
+        changed_states = [(rr + dd.turn_around().offset()[0], cc + dd.turn_around().offset()[1], dd) for dd in Direction2D]  # TODO: make faster
         changed_states_with_edges = [(state, get_node_of_state(*state)) for state in changed_states if
                                      (0 <= state[0] < h and 0 <= state[1] < w)]
         # print("Changed edges", changed_edges)
 
         # Our current state. Initially we just turn right.
-        cur_state = (r, c, direction.turn_right())
+        cur_state = (r, c, d.turn_right())
         cur_edge = get_node_of_state(*cur_state)
 
         for iteration in range(5):
+            print("Cur edge", cur_edge)
             highest_dist = -math.inf
             best_edge = None
-            best_state = None
+            #best_state = None
             for changed_state, changed_edge in changed_states_with_edges:
                 if cur_edge.other_downstream_of(changed_edge):
-                    highest_dist = max(highest_dist, changed_edge.dist)
-                    best_edge = changed_edge
-                    best_state = changed_state
+                    assert check_downstream_of(cur_state, changed_state)
+                    if changed_edge.dist > highest_dist:
+                        highest_dist = max(highest_dist, changed_edge.dist)
+                        best_edge = changed_edge
+                        best_state = changed_state
+                    elif changed_edge.dist == highest_dist:
+                        print("Equal dist.")
+                else:
+                    assert not check_downstream_of(cur_state, changed_state)
 
             if best_edge is None:
                 return cur_edge.cycles()
             else:
-                cur_edge = best_edge
+                print("Moving to best state:", best_state)
+                #cur_edge = best_edge
                 # turn right
-                a, b, d = best_state
-                cur_state = (a, b, direction.turn_right())
+                #a, b, d = best_state
+                #cur_state = (a, b, d.turn_right())
+                # Now, from the best state, we need to turn right.
+                new_state = best_state[0], best_state[1], best_state[2].turn_right()
+                cur_state = new_state
+                cur_edge = get_node_of_state(*cur_state)
 
-        # Moved 4 times
-        #print("timeout ending.")
+        # We have passed through these modified edges at least 4 times.
         return True
 
     # Find initial position.
@@ -507,7 +545,20 @@ def day2_graph(grid: List[str]):
 
     out = 0
 
+    # So the original cycling thing is still working jsut fine.
+    #for r_ in range(h):
+    #    for c_ in range(w):
+    #        if grid[r][c] == '#':
+    #            continue
+    #        for d_ in Direction2D:
+    #            if get_node_of_state(r_, c_, d_).cycles() ^ check_cycle(r_, c_, d_, set(), grid):
+    #                print("Fancy graph says cycle when we dont")
+    #                print(get_node_of_state(r_, c_, d_).cycles())
+
+    out_states = set()
+
     while True:
+        assert grid[r][c] != '#'
         grid[r][c] = '^'
         ro, co = direction.offset()
 
@@ -523,11 +574,14 @@ def day2_graph(grid: List[str]):
                 basic_cycle = check_cycle(r, c, direction, set(), grid)
                 grid[r + ro][c + co] = "."
                 if fancy_cycle and not basic_cycle:
-                    print("False cycle:")
-                    print(r, c, direction)
+                    #print("False cycle:")
+                    #print(r, c, direction)
+                    pass
                 elif basic_cycle and not fancy_cycle:
-                    print("Missed cycle:", r, c, direction)
+                    #print("Missed cycle:", r, c, direction)
+                    pass
                 if fancy_cycle:
+                    out_states.add((r+ro, c+co))
                     out += 1
                 grid[r+ro][c+co] = '^'
 
@@ -535,12 +589,14 @@ def day2_graph(grid: List[str]):
             r += ro
             c += co
 
+    print(len(out_states))
     return out
 
 
 
 
-
+# so we know that downstream works properly
+# and we know that terminality works properly
 
 
 
