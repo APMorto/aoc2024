@@ -1,3 +1,4 @@
+import timeit
 from collections import defaultdict
 import math
 from typing import List, Dict
@@ -118,8 +119,8 @@ def part2(grid: List[str]):
 
 
 if __name__ == '__main__':
-    #get_results("P1 example", part1, read_grid, "example.txt")
-    #get_results("P1", part1, read_grid, "input.txt")
+    get_results("P1 example", part1, read_grid, "example.txt")
+    get_results("P1", part1, read_grid, "input.txt")
 
     get_results("P2 example", part2, read_grid, "example.txt")
     get_results("P2", part2, read_grid, "input.txt")
