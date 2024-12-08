@@ -8,9 +8,10 @@ def time_with_output(func):
     return out, elapsed
 
 def get_results(name, solution, parse_fn, fp):
-    input = parse_fn(fp)
+    input, parse_time = time_with_output(lambda: parse_fn(fp))
     res, elapsed = time_with_output(lambda: solution(input))
     print(f"{name}:")
-    print("   ", res)
-    print("   ", elapsed, "s")
+    print( " ", res)
+    print(f"  {elapsed:.6f} s (Execution)")
+    print(f"  {parse_time:.6f} s (Parsing)")
 

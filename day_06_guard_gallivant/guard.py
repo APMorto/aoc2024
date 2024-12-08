@@ -14,8 +14,8 @@ MAX_TURNS = 0
 CUR_TURNS = 0
 
 
-def day1(fp):
-    grid = read_list_grid(fp)
+def day1(grid):
+    #grid = read_list_grid(fp)
     h = len(grid)
     w = len(grid[0])
 
@@ -50,9 +50,9 @@ def day1(fp):
     # Just count how many places we went to
     return sum(ch == '*' for ch in chain(*grid))
 
-def day2(fp):
+def day2(grid):
     global CUR_TURNS
-    grid = read_list_grid(fp)
+    #grid = read_list_grid(fp)
     h = len(grid)
     w = len(grid[0])
 
@@ -553,32 +553,14 @@ def day2_graph(grid: List[str]):
 
 
 
-
-# so we know that downstream works properly
-# and we know that terminality works properly
-
-
-
 if __name__ == '__main__':
     sys.setrecursionlimit(130*130*4*2)
-    #input_grid = read_list_grid('input')
-    #p2_result, p2_duration = time_with_output(lambda: day2_graph(input_grid))
-    #print("P2")
-    #print(p2_result)
-    #print(f"Solved with graph method in {p2_duration} seconds.")
-    get_results("Day 06 P2 (Graph)", day2_graph, read_list_grid, "input")
 
-    #print(timeit.timeit(lambda: print(day2_graph(input_grid)), number=1))
-    #print(timeit.timeit(lambda: day2('input'), number=1))
-    #print("total recursive checks:", TOT_REC_CHECKS)
-    #print("total check steps:", TOT_CHECK_STEPS)
-    #print("average check steps:", TOT_CHECK_STEPS / TOT_REC_CHECKS)
-    #print("max turns", MAX_TURNS)
-#
-    #print(day1('example.txt'))
-    #print(day1('input'))
-    #print(day2('example.txt'))
-    #print(day2('input'))
+    get_results("Day 06 P2 (Graph)", day2_graph, read_list_grid, "input")
+    get_results("Day 06 P2 (Normal method of cycle detection)", day2, read_list_grid, "input")
+    get_results("Day 06 P1", day1, read_list_grid, "input")
+
+
 
 
 
