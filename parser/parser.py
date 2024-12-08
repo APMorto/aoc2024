@@ -5,6 +5,9 @@ def read_grid(fp: str) -> List[str]:
         lines = f.readlines()
     return [l for line in lines if len(l:=line.strip()) > 0]
 
+def read_lines(fp: str) -> List[str]:
+    return read_grid(fp)
+
 def read_list_grid(fp: str) -> List[List[str]]:
     with open(fp, 'r') as f:
         lines = f.readlines()
