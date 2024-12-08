@@ -1,4 +1,4 @@
-from enum import Enum, EnumType, IntEnum
+from enum import IntEnum
 from typing import Tuple
 
 
