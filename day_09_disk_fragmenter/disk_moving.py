@@ -108,8 +108,12 @@ def part2(line: str):
             # We do NOT need to free up where we were, as that's right of what matters.
 
         # Add the results from this.
-        for k in range(dest, dest+size):
-            out += k * id
+        #for k in range(dest, dest+size):
+        #    out += k * id
+
+        # We can use the triangle numbers to make this faster. (Though this is constant because size < 10)
+        # A modest ~10% speed improvement.
+        out += (dest * size + (size * (size - 1)) // 2) * id
 
     return out
 
