@@ -21,7 +21,7 @@ def read_disk_state(disk, nums) -> None:
         j += num
     return None
 
-
+# This could be made faster. Actually having a physical representation of the input is frankly unimportant.
 def part1(line: str):
     s_len = len(line)
 
