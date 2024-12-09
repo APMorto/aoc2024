@@ -1,5 +1,9 @@
 from typing import List
 
+def read_line(fp: str) -> str:
+    with open(fp, 'r') as f:
+        return f.read().strip()
+
 def read_grid(fp: str) -> List[str]:
     with open(fp, 'r') as f:
         lines = f.readlines()
