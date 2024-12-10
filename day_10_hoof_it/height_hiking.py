@@ -119,3 +119,6 @@ if __name__ == '__main__':
     get_results("P2 Example", part2, read_grid, "example.txt")
     get_results("P2 Example 2", part2, read_grid, "example2.txt")
     get_results("P2", part2, read_grid, "input.txt")
+
+    get_results("P2 Custom 500x500", part2, read_grid, "custom_500.txt")
+    get_results("P2 Custom 1000x1000", part2, read_grid, "custom_1000.txt")
