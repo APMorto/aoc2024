@@ -24,3 +24,4 @@ def write_hiking_array(h, w, dest):
 
 write_hiking_array(500, 500, "./custom_500.txt")
 write_hiking_array(1000, 1000, "./custom_1000.txt")
+write_hiking_array(10000, 10000, "./custom_10000.txt")
