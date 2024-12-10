@@ -37,6 +37,10 @@ def num_ways_to_get_9s(r, c, num_masks: List[np.ndarray]):
     cur = np.zeros((h, w), dtype=np.long)
     cur[r][c] = 1
 
+    # DP, duplicates are allowed.
+    # The one concern here is how much wasted we have.
+    # Luckily no overflow.
+
     for i in range(1, 10):
         new = np.zeros((h, w), dtype=np.long)
         new[:-1]    += cur[1:]
@@ -56,7 +60,7 @@ def part1(grid: List[str]):
     heights = [list(map(int, line)) for line in grid]
     heights_arr = np.array(heights)
 
-    # We dont want to duplicate this tuff
+    # We dont want to duplicate this stuff
 
     # we could do some bitshift stuff here
     # If it was number of paths, I could make this really fast.
@@ -67,12 +71,8 @@ def part1(grid: List[str]):
 
     out = 0
     for r, c in zip(*np.nonzero(num_masks[0])):
+        # Number of distinct destinations
         out += num_9s_accessible(r, c, num_masks)
-        #num_paths_to_9s = num_ways_to_get_9s(r, c, num_masks)
-        #if num_paths_to_9s > 1:
-        #    available = num_9s_accessible(r, c, num_masks)
-        #    print(available)
-        #    out += available
 
     return out
 
@@ -84,25 +84,19 @@ def part2(grid: List[str]):
     heights = [list(map(int, line)) for line in grid]
     heights_arr = np.array(heights)
 
-    # We dont want to duplicate this tuff
-
-    # we could do some bitshift stuff here
-    # If it was number of paths, I could make this really fast.
-
     num_masks = [np.zeros((h, w), dtype=bool) for _ in range(10)]
     for i in range(10):
         num_masks[i] |= heights_arr == i
 
     out = 0
     for r, c in zip(*np.nonzero(num_masks[0])):
+        # Number of ways to get
         out += num_ways_to_get_9s(r, c, num_masks)
-        #num_paths_to_9s = num_ways_to_get_9s(r, c, num_masks)
-        #if num_paths_to_9s > 1:
-        #    available = num_9s_accessible(r, c, num_masks)
-        #    print(available)
-        #    out += available
 
     return out
+
+
+# So the notion of a trailhead is just nothing. Here I thought it was important, but no.
 
 
 if __name__ == '__main__':
