@@ -122,3 +122,6 @@ if __name__ == '__main__':
 
     get_results("P2 Custom 500x500", part2, read_grid, "custom_500.txt")
     get_results("P2 Custom 1000x1000", part2, read_grid, "custom_1000.txt")
+
+    get_results("P1 Challenge", part1, read_grid, "challenge.txt")
+    get_results("P2 Challenge", part2, read_grid, "challenge.txt")
