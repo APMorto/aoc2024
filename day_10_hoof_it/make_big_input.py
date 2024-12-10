@@ -20,7 +20,7 @@ def write_hiking_array(h, w, dest):
             #grid[r][c] = random.choice(strs)
 
     with open(dest, "w") as f:
-        f.writelines(map(lambda l: "".join(l), grid))
+        f.writelines(map(lambda l: "".join(l) + "\n", grid))
 
 write_hiking_array(500, 500, "./custom_500.txt")
 write_hiking_array(1000, 1000, "./custom_1000.txt")
