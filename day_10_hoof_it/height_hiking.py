@@ -84,16 +84,28 @@ def part2(grid: List[str]):
     heights = [list(map(int, line)) for line in grid]
     heights_arr = np.array(heights)
 
-    num_masks = [np.zeros((h, w), dtype=bool) for _ in range(10)]
-    for i in range(10):
-        num_masks[i] |= heights_arr == i
+    # It's faster to do everything in 1 array now, since we don't care about duplication
+    cur = heights_arr * heights_arr==0
+    for i in range(1, 10):
+        new = np.zeros((h, w), dtype=np.long)
+        new[:-1]    += cur[1:]
+        new[1:]     += cur[:-1]
+        new[:, :-1] += cur[:, 1:]
+        new[:, 1:]  += cur[:, :-1]
+        new *= heights_arr==i
+        cur = new
+    return np.sum(cur)
 
-    out = 0
-    for r, c in zip(*np.nonzero(num_masks[0])):
-        # Number of ways to get
-        out += num_ways_to_get_9s(r, c, num_masks)
-
-    return out
+    #num_masks = [np.zeros((h, w), dtype=bool) for _ in range(10)]
+    #for i in range(10):
+    #    num_masks[i] |= heights_arr == i
+#
+    #out = 0
+    #for r, c in zip(*np.nonzero(num_masks[0])):
+    #    # Number of ways to get
+    #    out += num_ways_to_get_9s(r, c, num_masks)
+#
+    #return out
 
 
 # So the notion of a trailhead is just nothing. Here I thought it was important, but no.
