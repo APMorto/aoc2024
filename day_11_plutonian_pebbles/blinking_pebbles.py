@@ -10,7 +10,7 @@ from util.timer import get_results
 #   Even number of digits -> left half, right half
 #   _ -> *= 2024
 
-# after [25] blinks, how many stones will you have?
+# after [25 / 75] blinks, how many stones will you have?
 
 def get_stone_counts(line: str):
     counts = {}
@@ -27,20 +27,22 @@ def blink_n_times(line, n):
             if num == 0:
                 new_counts[1] += amt
             elif (d := math.floor(math.log10(num)) + 1) % 2 == 0:
+                power = (10 ** (d // 2))
+                new_counts[num % power] += amt
+                new_counts[num // power] += amt
 
-                pow = (10 ** (d // 2))
-                remainder = num % pow
-                new_counts[remainder] += amt
-                new_counts[num // pow] += amt
+            # elif (d := len(str(num))) % 2 == 0:   # String parsing is slower.
+                #new_counts[int(s[:d//2])] += num
+                #new_counts[int(s[d // 2:])] += num
             else:
                 new_counts[num * 2024] += amt
         counts = new_counts
 
+    print("Average packing:", sum(counts.values()) / len(counts))   # Average packing: 58264724147.719986 for p2
     return sum(counts.values())
 
 def part1(line):
     return blink_n_times(line, 25)
-
 
 def part2(line):
     return blink_n_times(line, 75)
