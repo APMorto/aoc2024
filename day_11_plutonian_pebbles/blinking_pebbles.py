@@ -40,7 +40,7 @@ def blink_n_times(line, n):
                 new_counts[num * 2024] += amt
         counts = new_counts
 
-    print("Average packing:", sum(counts.values()) / len(counts))   # Average packing: 58264724147.719986 for p2
+    #print("Average packing:", sum(counts.values()) / len(counts))   # Average packing: 58264724147.719986 for p2
     return sum(counts.values())
 
 def part1(line):
@@ -48,6 +48,14 @@ def part1(line):
 
 def part2(line):
     return blink_n_times(line, 75)
+
+# Interestingly, I think this can be represented by a (potentially) infinitely sized matrix. Call it M
+# Then our solutions is just sum(INPUT * M ^ 75)
+# where M ^ 75 can be calculated recursively in logarithmic time
+# or potentially in ~~linear time if it is diagonalizable.
+# However we do not know what numbers will actually need to be present in the matrix.
+# And the matrix is sufficiently large, with the number of multiplications being sufficiently small that this may not
+#   be that beneficial.
 
 
 if __name__ == '__main__':
@@ -57,3 +65,6 @@ if __name__ == '__main__':
 
     get_results("P2 Example", part2, read_line, "example.txt")
     get_results("P2", part2, read_line, "input.txt")
+
+    get_results("Reddit 1k", lambda line: blink_n_times(line, 1000), read_line, "example.txt")
+    get_results("Reddit 10k", lambda line: blink_n_times(line, 10_000), read_line, "example.txt")
