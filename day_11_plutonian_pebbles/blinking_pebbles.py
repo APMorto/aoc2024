@@ -13,16 +13,18 @@ from util.timer import get_results
 # after [25 / 75] blinks, how many stones will you have?
 
 def get_stone_counts(line: str):
-    counts = {}
+    counts = defaultdict(int)
     for num in map(int, line.split()):
-        counts[num] = counts.get(num, 0) + 1
+        counts[num] += 1
     return counts
 
 def blink_n_times(line, n):
     counts = get_stone_counts(line)
 
     for blink in range(n):
-        new_counts = defaultdict(int)   # is dict faster?
+        # is dict faster? VERY slightly it seems, but it makes the code look terrible.
+        new_counts = defaultdict(int)
+
         for num, amt in counts.items():
             if num == 0:
                 new_counts[1] += amt
@@ -46,7 +48,6 @@ def part1(line):
 
 def part2(line):
     return blink_n_times(line, 75)
-
 
 
 if __name__ == '__main__':
