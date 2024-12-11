@@ -18,19 +18,15 @@ def get_stone_counts(line: str):
         counts[num] = counts.get(num, 0) + 1
     return counts
 
-
-
-def part1(line):
+def blink_n_times(line, n):
     counts = get_stone_counts(line)
 
-    for blink in range(25):
+    for blink in range(n):
         new_counts = defaultdict(int)   # is dict faster?
         for num, amt in counts.items():
             if num == 0:
                 new_counts[1] += amt
             elif (d := math.floor(math.log10(num)) + 1) % 2 == 0:
-                #if d != len(str(num)):
-                #    print(d, len(str(num)), num)
 
                 pow = (10 ** (d // 2))
                 remainder = num % pow
@@ -42,29 +38,12 @@ def part1(line):
 
     return sum(counts.values())
 
+def part1(line):
+    return blink_n_times(line, 25)
 
 
 def part2(line):
-    counts = get_stone_counts(line)
-
-    for blink in range(75):
-        new_counts = defaultdict(int)   # is dict faster?
-        for num, amt in counts.items():
-            if num == 0:
-                new_counts[1] += amt
-            elif (d := math.floor(math.log10(num)) + 1) % 2 == 0:
-                #if d != len(str(num)):
-                #    print(d, len(str(num)), num)
-
-                pow = (10 ** (d // 2))
-                remainder = num % pow
-                new_counts[remainder] += amt
-                new_counts[num // pow] += amt
-            else:
-                new_counts[num * 2024] += amt
-        counts = new_counts
-
-    return sum(counts.values())
+    return blink_n_times(line, 75)
 
 
 
