@@ -1,4 +1,3 @@
-from enum import Enum
 from typing import Union, Tuple
 
 
@@ -8,21 +7,6 @@ class Point2D:
     def __init__(self, x, y):
         self.x = x
         self.y = y
-
-    def __add__(self, other):
-        return Point2D(self.x + other.x, self.y + other.y)
-
-    def __sub__(self, other):
-        return Point2D(self.x - other.x, self.y - other.y)
-
-    def __mul__(self, other: Union[int, float]):
-        return Point2D(self.x * other, self.y * other)
-
-    def pairwise_mult(self, other: "Point2D"):
-        return Point2D(self.x * other.x, self.y * other.y)
-
-    def dot(self, other: "Point2D"):
-        return self.x * other.x + self.y * other.y
 
     def turn_right(self):
         return Point2D(self.y, -self.x)
@@ -39,6 +23,21 @@ class Point2D:
     def get_adjacent_ortho(self):
         for o in Point2D.DIRECTIONS:
             yield self + o
+
+    def pairwise_mult(self, other: "Point2D"):
+        return Point2D(self.x * other.x, self.y * other.y)
+
+    def dot(self, other: "Point2D"):
+        return self.x * other.x + self.y * other.y
+
+    def __add__(self, other):
+        return Point2D(self.x + other.x, self.y + other.y)
+
+    def __sub__(self, other):
+        return Point2D(self.x - other.x, self.y - other.y)
+
+    def __mul__(self, other: Union[int, float]):
+        return Point2D(self.x * other, self.y * other)
 
     def __repr__(self):
         return "({}, {})".format(self.x, self.y)

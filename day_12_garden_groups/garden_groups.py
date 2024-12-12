@@ -146,13 +146,11 @@ def part2_grid(list_of_strings: List[str]):
     for p in grid.row_major_points():
         here = grid.get(p)
         for d in Point2D.DIRECTIONS:
-            # Edge in direction of d
             o = p + d
-            if here != grid.get(o):
+            if here != grid.get(o):     # Is boundary in this direction
                 right = d.turn_right()
-                # Make sure the edge doesnt propagate
                 right_val = grid.get(p + right)
-                if not (here == right_val and right_val != grid.get(o + right)):
+                if not (here == right_val and right_val != grid.get(o + right)):    # Boundary does not propagate right
                     perimiters[dsu.find(p.row_major(w))] += 1
 
     # Sum area * perimeter
