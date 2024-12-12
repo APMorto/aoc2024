@@ -8,6 +8,7 @@ class Grid2DDense:
         self.grid = grid
         self.h = len(grid)
         self.w = len(grid[0])
+        self.shape = (self.h, self.w)
 
     def get(self, point: Point2D):
         return self.grid[point.y][point.x] if 0 <= point.y < self.h and 0 <= point.x < self.w else None

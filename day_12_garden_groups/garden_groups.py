@@ -11,11 +11,50 @@ from util.point2d import Point2D
 def part1(grid: List[str]):
     h = len(grid)
     w = len(grid[0])
+
+    dsu = DisJointSets(h * w)
+
+    # Set up connected components for areas
+    for r in range(h):
+        for c in range(w):
+            for ro, co in ((0, 1), (1, 0), (0, -1), (-1, 0)):
+                if 0 <= r+ro < h and 0 <= c+co < w:
+                    rr, cc = r + ro, c + co
+                    if grid[rr][cc] == grid[r][c]:
+                        dsu.join(r*w+c, rr*w+cc)
+
+    # Perimeters of roots
+    perimiters = defaultdict(int)
+
+    # Count perimeters.
+    for r in range(h):
+        for c in range(w):
+            for ro, co in ((0, 1), (1, 0), (0, -1), (-1, 0)):
+                #if not (0 <= r+ro < h and 0 <= c+co < w and grid[r+ro][c+co] != grid[r][c]):
+                #    perimiters[dsu.find(r * w + c)] += 1
+                if 0 <= r+ro < h and 0 <= c+co < w:
+                    rr, cc = r + ro, c + co
+                    if grid[rr][cc] != grid[r][c]:
+                        perimiters[dsu.find(r * w + c)] += 1
+                else:
+                    perimiters[dsu.find(r * w + c)] += 1
+
+
+    # Sum area * perimeter
+    out = 0
+    for root in dsu.componentRoots():
+        #print(root, perimiters[dsu.find(root)], dsu.componentSize(root))
+        out += perimiters[dsu.find(root)] * dsu.componentSize(root)
+    return out
+
+def part1_grid(grid: List[str]):
+    h = len(grid)
+    w = len(grid[0])
     grid = Grid2DDense(grid)
 
     dsu = DisJointSets(h * w)
 
-    # Count Area.
+    # Set up connected components.
     for p in grid.row_major_points():
         for adj in p.get_adjacent_ortho():
             if grid.get(p) == grid.get(adj):
@@ -35,6 +74,7 @@ def part1(grid: List[str]):
     for root in dsu.componentRoots():
         out += perimiters[dsu.find(root)] * dsu.componentSize(root)
     return out
+
 
 def part2(grid: List[str]):
     h = len(grid)
@@ -88,14 +128,48 @@ def part2(grid: List[str]):
         out += perimiters[dsu.find(root)] * dsu.componentSize(root)
     return out
 
-# 922223 too high
+def part2_grid(list_of_strings: List[str]):
+    grid = Grid2DDense(list_of_strings)
+    h, w = grid.shape
+    dsu = DisJointSets(h * w)
+
+    # Set up connected components.
+    for p in grid.row_major_points():
+        for adj in p.get_adjacent_ortho():
+            if grid.get(p) == grid.get(adj):
+                dsu.join(p.row_major(w), adj.row_major(w))
+
+    # Perimeters of roots
+    perimiters = defaultdict(int)
+
+    # Get adjacent
+    for p in grid.row_major_points():
+        here = grid.get(p)
+        for d in Point2D.DIRECTIONS:
+            # Edge in direction of d
+            o = p + d
+            if here != grid.get(o):
+                right = d.turn_right()
+                # Make sure the edge doesnt propagate
+                right_val = grid.get(p + right)
+                if not (here == right_val and right_val != grid.get(o + right)):
+                    perimiters[dsu.find(p.row_major(w))] += 1
+
+    # Sum area * perimeter
+    out = 0
+    for root in dsu.componentRoots():
+        out += perimiters[dsu.find(root)] * dsu.componentSize(root)
+    return out
+
 
 if __name__ == '__main__':
     get_results("P1 Example Small", part1, read_grid, "examplesmall.txt")
     get_results("P1 Example", part1, read_grid, "example.txt")
     get_results("P1", part1, read_grid, "input.txt")
+    get_results("P1 Grid", part1_grid, read_grid, "input.txt")
 
     get_results("P2 Example Small", part2, read_grid, "examplesmall.txt")   # Should be 80
     get_results("P2 Example", part2, read_grid, "example.txt")
     get_results("P2 Example ABBA", part2, read_grid, "exampleABBA.txt")
     get_results("P2", part2, read_grid, "input.txt")
+    get_results("P2 Grid", part2_grid, read_grid, "input.txt")
