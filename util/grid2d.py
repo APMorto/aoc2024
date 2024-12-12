@@ -13,7 +13,15 @@ class Grid2DDense:
         return self.grid[point.y][point.x] if 0 <= point.y < self.h and 0 <= point.x < self.w else None
 
     def __getitem__(self, item):
-        return lambda next_item: self.grid[item][next_item]
+        return self.grid[item]
+        #return lambda next_item: self.grid[item][next_item]
 
     def row_major_indexes(self):
-        return (r, c for c in range(self.w) for r in range(self.h))
+        return ((r, c) for c in range(self.w) for r in range(self.h))
+
+    def row_major_points(self):
+        return (Point2D(r, c) for c in range(self.w) for r in range(self.h))
+
+    def __len__(self):
+        return len(self.grid)
+

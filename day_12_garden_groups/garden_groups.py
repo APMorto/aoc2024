@@ -5,44 +5,34 @@ from util.datastructures import DisJointSets
 from parser.parser import read_grid
 from util.directions import Direction2D
 from util.timer import get_results
-
+from util.grid2d import Grid2DDense
+from util.point2d import Point2D
 
 def part1(grid: List[str]):
     h = len(grid)
     w = len(grid[0])
+    grid = Grid2DDense(grid)
 
     dsu = DisJointSets(h * w)
 
-    # Set up connected components for areas
-    for r in range(h):
-        for c in range(w):
-            for ro, co in ((0, 1), (1, 0), (0, -1), (-1, 0)):
-                if 0 <= r+ro < h and 0 <= c+co < w:
-                    rr, cc = r + ro, c + co
-                    if grid[rr][cc] == grid[r][c]:
-                        dsu.join(r*w+c, rr*w+cc)
+    # Count Area.
+    for p in grid.row_major_points():
+        for adj in p.get_adjacent_ortho():
+            if grid.get(p) == grid.get(adj):
+                dsu.join(p.row_major(w), adj.row_major(w))
 
     # Perimeters of roots
     perimiters = defaultdict(int)
 
     # Count perimeters.
-    for r in range(h):
-        for c in range(w):
-            for ro, co in ((0, 1), (1, 0), (0, -1), (-1, 0)):
-                #if not (0 <= r+ro < h and 0 <= c+co < w and grid[r+ro][c+co] != grid[r][c]):
-                #    perimiters[dsu.find(r * w + c)] += 1
-                if 0 <= r+ro < h and 0 <= c+co < w:
-                    rr, cc = r + ro, c + co
-                    if grid[rr][cc] != grid[r][c]:
-                        perimiters[dsu.find(r * w + c)] += 1
-                else:
-                    perimiters[dsu.find(r * w + c)] += 1
-
+    for p in grid.row_major_points():
+        for adj in p.get_adjacent_ortho():
+            if grid.get(p) != grid.get(adj):
+                perimiters[dsu.find(p.row_major(w))] += 1
 
     # Sum area * perimeter
     out = 0
     for root in dsu.componentRoots():
-        #print(root, perimiters[dsu.find(root)], dsu.componentSize(root))
         out += perimiters[dsu.find(root)] * dsu.componentSize(root)
     return out
 

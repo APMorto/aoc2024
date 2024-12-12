@@ -1,8 +1,10 @@
 from enum import Enum
-from typing import Union
+from typing import Union, Tuple
 
 
 class Point2D:
+    DIRECTIONS: Tuple["Point2D"]
+
     def __init__(self, x, y):
         self.x = x
         self.y = y
@@ -31,17 +33,23 @@ class Point2D:
     def turn_around(self):
         return Point2D(self.x * -1, self.y * -1)
 
+    def row_major(self, width: int):
+        return self.x + self.y * width
+
+    def get_adjacent_ortho(self):
+        for o in Point2D.DIRECTIONS:
+            yield self + o
+
     def __repr__(self):
         return "({}, {})".format(self.x, self.y)
 
+    def __iter__(self):
+        return iter((self.x, self.y))
+
 # Default direction pointers.
-#Point2D.RIGHT = Point2D(0, 1)
-#Point2D.DOWN =  Point2D(1, 0)
-#Point2D.LEFT =  Point2D(0, -1)
-#Point2D.UP =    Point2D(-1, 0)
-class Point2DDirections(Enum):
-    RIGHT = Point2D(0, 1)
-    DOWN = Point2D(1, 0)
-    LEFT = Point2D(0, -1)
-    UP = Point2D(-1, 0)
+Point2D.RIGHT = Point2D(0, 1)
+Point2D.DOWN =  Point2D(1, 0)
+Point2D.LEFT =  Point2D(0, -1)
+Point2D.UP =    Point2D(-1, 0)
+Point2D.DIRECTIONS = (Point2D.RIGHT, Point2D.DOWN, Point2D.LEFT, Point2D.UP)
 
