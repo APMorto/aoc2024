@@ -18,11 +18,12 @@ class Grid2DDense:
         #return lambda next_item: self.grid[item][next_item]
 
     def row_major_indexes(self):
-        return ((r, c) for c in range(self.w) for r in range(self.h))
+        return ((r, c) for r in range(self.h) for c in range(self.w))
 
     def row_major_points(self):
-        return (Point2D(r, c) for c in range(self.w) for r in range(self.h))
+        return (Point2D(r, c) for r in range(self.h) for c in range(self.w))
 
     def __len__(self):
-        return len(self.grid)
+        return self.h * self.w
+        #return len(self.grid)
 
