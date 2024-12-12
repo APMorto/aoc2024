@@ -8,6 +8,67 @@ from util.timer import get_results
 from util.grid2d import Grid2DDense
 from util.point2d import Point2D
 
+
+def part1_grid(grid: List[str]):
+    h = len(grid)
+    w = len(grid[0])
+    grid = Grid2DDense(grid)
+
+    dsu = DisJointSets(h * w)
+
+    # Set up connected components.
+    for p in grid.row_major_points():
+        for adj in p.get_adjacent_ortho():
+            if grid.get(p) == grid.get(adj):
+                dsu.join(p.row_major(w), adj.row_major(w))
+
+    # Perimeters of roots
+    perimiters = defaultdict(int)
+
+    # Count perimeters.
+    for p in grid.row_major_points():
+        for adj in p.get_adjacent_ortho():
+            if grid.get(p) != grid.get(adj):
+                perimiters[dsu.find(p.row_major(w))] += 1
+
+    # Sum area * perimeter
+    out = 0
+    for root in dsu.componentRoots():
+        out += perimiters[dsu.find(root)] * dsu.componentSize(root)
+    return out
+
+def part2_grid(list_of_strings: List[str]):
+    grid = Grid2DDense(list_of_strings)
+    h, w = grid.shape
+    dsu = DisJointSets(h * w)
+
+    # Set up connected components.
+    for p in grid.row_major_points():
+        for adj in p.get_adjacent_ortho():
+            if grid.get(p) == grid.get(adj):
+                dsu.join(p.row_major(w), adj.row_major(w))
+
+    # Perimeters of roots
+    perimiters = defaultdict(int)
+
+    # Get adjacent
+    for p in grid.row_major_points():
+        here = grid.get(p)
+        for direction in Point2D.DIRECTIONS:
+            offset_point = p + direction
+            if here != grid.get(offset_point):     # Is boundary in this direction
+                right = direction.turn_right()
+                right_val = grid.get(p + right)
+                if not (here == right_val and right_val != grid.get(offset_point + right)):    # Boundary does not propagate right
+                    perimiters[dsu.find(p.row_major(w))] += 1
+
+    # Sum area * perimeter
+    out = 0
+    for root in dsu.componentRoots():
+        out += perimiters[dsu.find(root)] * dsu.componentSize(root)
+    return out
+
+# Old, uglier. (And 2x as fast)
 def part1(grid: List[str]):
     h = len(grid)
     w = len(grid[0])
@@ -47,35 +108,7 @@ def part1(grid: List[str]):
         out += perimiters[dsu.find(root)] * dsu.componentSize(root)
     return out
 
-def part1_grid(grid: List[str]):
-    h = len(grid)
-    w = len(grid[0])
-    grid = Grid2DDense(grid)
-
-    dsu = DisJointSets(h * w)
-
-    # Set up connected components.
-    for p in grid.row_major_points():
-        for adj in p.get_adjacent_ortho():
-            if grid.get(p) == grid.get(adj):
-                dsu.join(p.row_major(w), adj.row_major(w))
-
-    # Perimeters of roots
-    perimiters = defaultdict(int)
-
-    # Count perimeters.
-    for p in grid.row_major_points():
-        for adj in p.get_adjacent_ortho():
-            if grid.get(p) != grid.get(adj):
-                perimiters[dsu.find(p.row_major(w))] += 1
-
-    # Sum area * perimeter
-    out = 0
-    for root in dsu.componentRoots():
-        out += perimiters[dsu.find(root)] * dsu.componentSize(root)
-    return out
-
-
+# Old, ugly.
 def part2(grid: List[str]):
     h = len(grid)
     w = len(grid[0])
@@ -125,37 +158,6 @@ def part2(grid: List[str]):
     out = 0
     for root in dsu.componentRoots():
         #print(root, perimiters[dsu.find(root)], dsu.componentSize(root))
-        out += perimiters[dsu.find(root)] * dsu.componentSize(root)
-    return out
-
-def part2_grid(list_of_strings: List[str]):
-    grid = Grid2DDense(list_of_strings)
-    h, w = grid.shape
-    dsu = DisJointSets(h * w)
-
-    # Set up connected components.
-    for p in grid.row_major_points():
-        for adj in p.get_adjacent_ortho():
-            if grid.get(p) == grid.get(adj):
-                dsu.join(p.row_major(w), adj.row_major(w))
-
-    # Perimeters of roots
-    perimiters = defaultdict(int)
-
-    # Get adjacent
-    for p in grid.row_major_points():
-        here = grid.get(p)
-        for d in Point2D.DIRECTIONS:
-            o = p + d
-            if here != grid.get(o):     # Is boundary in this direction
-                right = d.turn_right()
-                right_val = grid.get(p + right)
-                if not (here == right_val and right_val != grid.get(o + right)):    # Boundary does not propagate right
-                    perimiters[dsu.find(p.row_major(w))] += 1
-
-    # Sum area * perimeter
-    out = 0
-    for root in dsu.componentRoots():
         out += perimiters[dsu.find(root)] * dsu.componentSize(root)
     return out
 
