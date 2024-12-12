@@ -3,6 +3,10 @@ from typing import Union, Tuple
 
 class Point2D:
     DIRECTIONS: Tuple["Point2D"]
+    RIGHT: "Point2D"
+    DOWN: "Point2D"
+    LEFT: "Point2D"
+    UP: "Point2D"
 
     def __init__(self, x, y):
         self.x = x
