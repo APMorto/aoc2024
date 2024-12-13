@@ -7,11 +7,19 @@ def time_with_output(func):
     elapsed = timeit.timeit(lambda: res.__setitem__(0, func()), number=1)
     return res[0], elapsed
 
-def get_results(name, solution, parse_fn, fp):
+def get_results(name, solution, parse_fn, fp, **kwargs):
     input, parse_time = time_with_output(lambda: parse_fn(fp))
     res, elapsed = time_with_output(lambda: solution(input))
+
     print(f"{name}:")
-    print( " ", res)
+    if "expected" in kwargs and kwargs["expected"] != res:
+        print(" ", res, "❌")
+        print("  Expected:", kwargs["expected"])
+    elif "expected" in kwargs and kwargs["expected"] == res:
+        print(" ", res, "✅")
+    else:
+        print( " ", res)
+
     if elapsed > 1e-5:
         print(f"  {elapsed:.6f} s (Execution)")
         print(f"  {parse_time:.6f} s (Parsing)")

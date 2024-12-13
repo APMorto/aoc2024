@@ -1,6 +1,4 @@
 import math
-from email.base64mime import body_decode
-from functools import cache
 from typing import List
 
 from parser.parser import read_line_blocks
@@ -97,14 +95,9 @@ def part2(line_blocks: List[List[str]]):
         out += min_cost_to_get_prize_part_2(offsets[0], offsets[1], (offsets[2][0] + PART_2_OFFSET, offsets[2][1] + PART_2_OFFSET))
     return out
 
-# Each button does not need to be pressed any more than 100 times.
-# A costs 3, B costs 4
-
-# 46316532262826 too low
-# 49374249917308 too low
 
 if __name__ == '__main__':
-    get_results("P1 Example", part1, read_line_blocks, "example.txt")
+    get_results("P1 Example", part1, read_line_blocks, "example.txt", expected=480)
     get_results("P1", part1, read_line_blocks, "input.txt")
 
     get_results("P2 Example", part2, read_line_blocks, "example.txt")
