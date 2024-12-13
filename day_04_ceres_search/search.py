@@ -1,13 +1,8 @@
-import sys
-from itertools import chain
-
 from parser.parser import read_grid
+from util.timer import get_results
 
 
-def day1(fp):
-    grid = read_grid(fp)
-
-    print(grid)
+def part1(grid):
 
     h = len(grid)
     w = len(grid[0])
@@ -33,9 +28,7 @@ def day1(fp):
 
     return out
 
-def day2(fp):
-    grid = read_grid(fp)
-
+def part2(grid):
     h = len(grid)
     w = len(grid[0])
 
@@ -74,10 +67,9 @@ def day2(fp):
     return out
 
 
-
-
 if __name__ == "__main__":
-    print(day1("example.txt"))
-    print(day1("p1.txt"))
-    print(day2("example.txt"))
-    print(day2("p1.txt"))
+    get_results("P1 Example", part1, read_grid, "example.txt")
+    get_results("P1", part1, read_grid, "input.txt")
+
+    get_results("P2 Example", part2, read_grid, "example.txt")
+    get_results("P2", part2, read_grid, "input.txt")
