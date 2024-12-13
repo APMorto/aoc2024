@@ -26,3 +26,5 @@ def get_results(name, solution, parse_fn, fp, **kwargs):
     else:
         print(f"  {elapsed:.12f} s (Execution)")
         print(f"  {parse_time:.12f} s (Parsing)")
+
+    return res, elapsed, parse_time

@@ -48,7 +48,7 @@ class StateNode:
         return f"<d: {self.dist}, rootID: {self.rootID}, indexID: {self.indexID}>"
 
 
-def day2_graph(grid: List[str]):
+def part2_graph(grid: List[str]):
     h = len(grid)
     w = len(grid[0])
 
@@ -265,7 +265,7 @@ MAX_TURNS = 0
 CUR_TURNS = 0
 
 
-def day1(grid):
+def part1(grid):
     #grid = read_list_grid(fp)
     h = len(grid)
     w = len(grid[0])
@@ -301,7 +301,7 @@ def day1(grid):
     # Just count how many places we went to
     return sum(ch == '*' for ch in chain(*grid))
 
-def day2(grid):
+def part2(grid):
     global CUR_TURNS
     #grid = read_list_grid(fp)
     h = len(grid)
@@ -580,9 +580,9 @@ def check_cycle(r, c, direction, visited, grid):
 if __name__ == '__main__':
     sys.setrecursionlimit(130*130*4*2)
 
-    get_results("Day 06 P2 (Graph)", day2_graph, read_list_grid, "input.txt")
-    get_results("Day 06 P2 (Normal method of cycle detection)", day2, read_list_grid, "input.txt")
-    get_results("Day 06 P1", day1, read_list_grid, "input.txt")
+    get_results("Day 06 P2 (Graph)", part2_graph, read_list_grid, "input.txt")
+    get_results("Day 06 P2 (Normal method of cycle detection)", part2, read_list_grid, "input.txt")
+    get_results("Day 06 P1", part1, read_list_grid, "input.txt")
 
     #get_results("Day 06 P2 (Graph)", day2_graph, read_list_grid, "./day_06_guard_gallivant/input")
     #get_results("Day 06 P2 (Normal method of cycle detection)", day2, read_list_grid, "day_06_guard_gallivant/input")
