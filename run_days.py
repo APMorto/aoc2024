@@ -16,16 +16,16 @@ import day_13_claw_contraption.claw_contraption as day_13
 
 day_information = {
 # DAY: (p1, p2, input_fn, [input_fn2], "dir")
-    4: (day_04.part1, day_04.part2, read_grid, "day_04_ceres_search"),
-    5: (day_05.part1, day_05.part2, read_line_blocks, "day_05_print_queue"),
-    6: (day_06.part1, day_06.part2_graph, read_list_grid, "day_06_guard_gallivant"),
-    7: (day_07.part1, day_07.part2_parallel, day_07.read_equations, "day_07_bridge_repair"),
-    8: (day_08.part1, day_08.part2, read_grid, "day_08_resonant_collinearity"),
-    9: (day_09.part1, day_09.part2, read_line, "day_09_disk_fragmenter"),
-    10: (day_10.part1, day_10.part2, read_grid, "day_10_hoof_it"),
-    11: (day_11.part1, day_11.part2, read_line, "day_11_plutonian_pebbles"),
-    12: (day_12.part1, day_12.part2, read_grid, "day_12_garden_groups"),
-    13: (day_13.part1, day_13.part2, read_line_blocks, "day_13_claw_contraption"),
+    4: (day_04.part1,   day_04.part2,       read_grid,          "day_04_ceres_search"),
+    5: (day_05.part1,   day_05.part2,       read_line_blocks,   "day_05_print_queue"),
+    6: (day_06.part1,   day_06.part2_graph, read_list_grid,     "day_06_guard_gallivant"),
+    7: (day_07.part1,   day_07.part2_parallel, day_07.read_equations, "day_07_bridge_repair"),
+    8: (day_08.part1,   day_08.part2,       read_grid,          "day_08_resonant_collinearity"),
+    9: (day_09.part1,   day_09.part2,       read_line,          "day_09_disk_fragmenter"),
+    10: (day_10.part1,  day_10.part2,       read_grid,          "day_10_hoof_it"),
+    11: (day_11.part1,  day_11.part2,       read_line,          "day_11_plutonian_pebbles"),
+    12: (day_12.part1,  day_12.part2,       read_grid,          "day_12_garden_groups"),
+    13: (day_13.part1,  day_13.part2,       read_line_blocks,   "day_13_claw_contraption"),
 
 }
 
