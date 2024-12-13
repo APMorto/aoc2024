@@ -580,9 +580,9 @@ def check_cycle(r, c, direction, visited, grid):
 if __name__ == '__main__':
     sys.setrecursionlimit(130*130*4*2)
 
-    get_results("Day 06 P2 (Graph)", day2_graph, read_list_grid, "input")
-    get_results("Day 06 P2 (Normal method of cycle detection)", day2, read_list_grid, "input")
-    get_results("Day 06 P1", day1, read_list_grid, "input")
+    get_results("Day 06 P2 (Graph)", day2_graph, read_list_grid, "input.txt")
+    get_results("Day 06 P2 (Normal method of cycle detection)", day2, read_list_grid, "input.txt")
+    get_results("Day 06 P1", day1, read_list_grid, "input.txt")
 
     #get_results("Day 06 P2 (Graph)", day2_graph, read_list_grid, "./day_06_guard_gallivant/input")
     #get_results("Day 06 P2 (Normal method of cycle detection)", day2, read_list_grid, "day_06_guard_gallivant/input")

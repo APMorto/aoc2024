@@ -1,8 +1,9 @@
 from collections import defaultdict
 from typing import Iterable, Tuple, List, Dict, Collection
-import timeit
 
-from parser.parser import read_line_blocks
+from parser.parser import read_line_blocks, read_line
+from util.timer import get_results
+
 
 def read_rules(rule_strings: List[str]) -> Iterable[Tuple[int, int]]:
     for l in rule_strings:
@@ -83,8 +84,8 @@ def order_numbers(ordering, successors: Dict[int, Collection[int]]):
     return out
 
 
-def day1(fp):
-    rule_strings, list_strings = read_line_blocks(fp)
+def part1(line_blocks):
+    rule_strings, list_strings = line_blocks
 
     # So, Something is only incorrect if a precedes b, and there is rule b|a
     successors = defaultdict(set)
@@ -99,8 +100,8 @@ def day1(fp):
 
     return out
 
-def day2(fp):
-    rule_strings, list_strings = read_line_blocks(fp)
+def part2(line_blocks):
+    rule_strings, list_strings = line_blocks
 
     # So, Something is only incorrect if a precedes b, and there is rule b|a
     successors = defaultdict(set)
@@ -117,11 +118,9 @@ def day2(fp):
 
     return out
 
-
 if __name__ == '__main__':
-    print(day1("example.txt"))
-    print(day1("p1.txt"))
-    print(day2("example.txt"))
-    print(day2("p1.txt"))
+    get_results("P1 Example", part1, read_line_blocks, "example.txt")
+    get_results("P1", part1, read_line_blocks, "input.txt")
 
-    print(timeit.timeit(lambda: day2("p1.txt"), number=1000))
+    get_results("P2 Example", part2, read_line_blocks, "example.txt")
+    get_results("P2", part2, read_line_blocks, "input.txt")
