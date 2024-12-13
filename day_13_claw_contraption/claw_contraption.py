@@ -8,6 +8,28 @@ from util.timer import get_results
 
 PART_2_OFFSET = 10_000_000_000_000
 
+
+# ~O(1)
+def min_cost_to_get_prize_part_2(a_offset, b_offset, prize_offset):
+    ax, ay = a_offset
+    bx, by = b_offset
+    prizex, prizey = prize_offset
+
+    # Part 1 had only 1 solution.
+    # We want to find min{3A + 1B : A*ax + B*bx == prizex and A*ay + B*by == prizey}
+    # So, A*ax = prizex - B*bx
+    #     A = prizex / ax - B*bx/ax
+    #     A = prizey / ay - B*by/ay
+    #     0 = (prizex/ax - prizey/ay) + B (by/ay - bx/ax)
+    #     B = (prizex/ax - prizey/ay) / (bx/ax - by/ay)
+    B = (prizex/ax - prizey/ay) / (bx/ax - by/ay)
+    B = round(B)
+    A = round(prizex / ax - B*bx/ax)
+    if A*ax + B*bx == prizex and A*ay + B*by == prizey:
+        return 3*A + B
+    else:
+        return 0
+
 def parse_machine_block(block: List[str]):
     # All A and B offsets are 2 digit numbers.
     a_move_str, b_move_str, prize_location_str = block
@@ -24,10 +46,11 @@ def parse_machine_block(block: List[str]):
 def parse_machine_blocks(blocks: List[List[str]]):
     return map(parse_machine_block, blocks)
 
-def min_cost_to_get_prize(a_offset, b_offset, prize_offset):
+# ~O(n)
+# Slower. No longer used since part 2 approach is better.
+def min_cost_to_get_prize_part1_slow(a_offset, b_offset, prize_offset):
     ax, ay = a_offset
     bx, by = b_offset
-
     prizex, prizey = prize_offset
 
     # We want to find min{3A + 1B : A*ax + B*bx == prizex and A*ay + B*by == prizey}
@@ -54,77 +77,24 @@ def min_cost_to_get_prize(a_offset, b_offset, prize_offset):
         B -= 1
         cur_x -= bx
         cur_y -= by
-
     return best
 
 
 def part1(line_blocks: List[List[str]]):
-
     # We are solving each of these on their own, no combination.
     out = 0
     for offsets in parse_machine_blocks(line_blocks):
-        cost = min_cost_to_get_prize(*offsets)
-        cost2 = min_cost_to_get_prize_part_2(*offsets)
-        if (cost2 < math.inf) ^ (cost < math.inf):
-            print(cost, cost2)
-        #print(cost)
+        #cost = min_cost_to_get_prize(*offsets)
+        cost = min_cost_to_get_prize_part_2(*offsets)
         out += cost if cost < math.inf else 0
     return out
-
-
-def min_cost_to_get_prize_part_2(a_offset, b_offset, prize_offset):
-    ax, ay = a_offset
-    bx, by = b_offset
-    prizex, prizey = prize_offset
-
-    # We know that each addition does something
-    # Are these cyclic?
-    # Now, part 1 had only 1 solution.
-
-    # We want to find min{3A + 1B : A*ax + B*bx == prizex and A*ay + B*by == prizey}
-    # So, A*ax = prizex - B*bx
-    #     A = prizex / ax - B*bx/ax
-    #     A = prizey / ay - B*by/ay
-    #     0 = (prizex/ax - prizey/ay) + B (by/ay - bx/ax)
-    #     B = (prizex/ax - prizey/ay) / (bx/ax - by/ay)
-    B = (prizex/ax - prizey/ay) / (bx/ax - by/ay)
-    B = round(B)
-    if B < 0:
-        return math.inf
-
-    A = round(prizex / ax - B*bx/ax)
-    #print(f"A: {A}, B: {B}")
-    if A*ax + B*bx == prizex and A*ay + B*by == prizey:
-        return 3*A + B
-    else:
-        return math.inf
-
-    # Look at X - Y
-    # Our final X - Y must be correct
-    # and each addition of A and B change this
-    # If one is pos, and one is negative, its free
-    a_delta = ax - ay
-    b_delta = bx - by
-    if (a_delta > 0) ^ (b_delta > 0):
-        # Differing Deltas!
-        # Now we have another annoying linear combination
-        pass
-
-
-    else:
-        print("Opposite delta signs failing")
-        print(a_offset, b_offset, prize_offset)
-        print(a_delta, b_delta)
-    return math.inf
 
 
 def part2(line_blocks: List[List[str]]):
     # We are solving each of these on their own, no combination.
     out = 0
     for offsets in parse_machine_blocks(line_blocks):
-        cost = min_cost_to_get_prize_part_2(offsets[0], offsets[1], (offsets[2][0] + PART_2_OFFSET, offsets[2][1] + PART_2_OFFSET))
-        #print(cost)
-        out += cost if cost < math.inf else 0
+        out += min_cost_to_get_prize_part_2(offsets[0], offsets[1], (offsets[2][0] + PART_2_OFFSET, offsets[2][1] + PART_2_OFFSET))
     return out
 
 # Each button does not need to be pressed any more than 100 times.
