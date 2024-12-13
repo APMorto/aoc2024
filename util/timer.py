@@ -11,20 +11,23 @@ def get_results(name, solution, parse_fn, fp, **kwargs):
     input, parse_time = time_with_output(lambda: parse_fn(fp))
     res, elapsed = time_with_output(lambda: solution(input))
 
-    print(f"{name}:")
-    if "expected" in kwargs and kwargs["expected"] != res:
-        print(" ", res, "❌")
-        print("  Expected:", kwargs["expected"])
-    elif "expected" in kwargs and kwargs["expected"] == res:
-        print(" ", res, "✅")
+    if kwargs.get("dense", False):
+        print(f"{name}: {res : >14}, Ex: {elapsed:.3f}s, Prs: {parse_time:.4f}s")
     else:
-        print( " ", res)
+        print(f"{name}:")
+        if "expected" in kwargs and kwargs["expected"] != res:
+            print(" ", res, "❌")
+            print("  Expected:", kwargs["expected"])
+        elif "expected" in kwargs and kwargs["expected"] == res:
+            print(" ", res, "✅")
+        else:
+            print( " ", res)
 
-    if elapsed > 1e-5:
-        print(f"  {elapsed:.6f} s (Execution)")
-        print(f"  {parse_time:.6f} s (Parsing)")
-    else:
-        print(f"  {elapsed:.12f} s (Execution)")
-        print(f"  {parse_time:.12f} s (Parsing)")
+        if elapsed > 1e-5:
+            print(f"  {elapsed:.6f} s (Execution)")
+            print(f"  {parse_time:.6f} s (Parsing)")
+        else:
+            print(f"  {elapsed:.12f} s (Execution)")
+            print(f"  {parse_time:.12f} s (Parsing)")
 
     return res, elapsed, parse_time

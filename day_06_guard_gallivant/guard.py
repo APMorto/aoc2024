@@ -52,6 +52,9 @@ def part2_graph(grid: List[str]):
     h = len(grid)
     w = len(grid[0])
 
+    old_recursion_limit = sys.getrecursionlimit()
+    sys.setrecursionlimit(130 * 130 * 4 * 2)
+
     state_to_node: List[List[List[Optional[StateNode]]]] = [[[None] * 4 for _ in range(w)] for _ in range(h)]  # h*w*4; [r][c][d]
 
     # Move.
@@ -256,6 +259,7 @@ def part2_graph(grid: List[str]):
     #                calculated += 1
     #print("Cached", calculated, "states of roughly", w * h * 4, "possible states")
 
+    sys.setrecursionlimit(old_recursion_limit)
     return out
 
 

@@ -18,7 +18,7 @@ day_information = {
 # DAY: (p1, p2, input_fn, [input_fn2], "dir")
     4: (day_04.part1, day_04.part2, read_grid, "day_04_ceres_search"),
     5: (day_05.part1, day_05.part2, read_line_blocks, "day_05_print_queue"),
-    6: (day_06.part1, day_06.part2, read_list_grid, "day_06_guard_gallivant"),
+    6: (day_06.part1, day_06.part2_graph, read_list_grid, "day_06_guard_gallivant"),
     7: (day_07.part1, day_07.part2_parallel, day_07.read_equations, "day_07_bridge_repair"),
     8: (day_08.part1, day_08.part2, read_grid, "day_08_resonant_collinearity"),
     9: (day_09.part1, day_09.part2, read_line, "day_09_disk_fragmenter"),
@@ -50,6 +50,7 @@ if __name__ == "__main__":
         file = os.path.join(folder, "input.txt")
         res1, time1, parse_time1 = get_results(f"Day {day} P1", p1, parse1, file, dense=True)
         res2, time2, parse_time2 = get_results(f"Day {day} P2", p2, parse2, file, dense=True)
+        print()
 
         p1_results.append(res1)
         p2_results.append(res2)
@@ -61,11 +62,21 @@ if __name__ == "__main__":
         p2_parse_times.append(parse_time2)
 
     print()
+
+    # Get total times.
     total_p1_time, total_p2_time, total_p1_parse_time, total_p2_parse_time = map(sum, (p1_times, p2_times, p1_parse_times, p2_parse_times))
     total_time = sum((total_p1_time, total_p2_time, total_p1_parse_time, total_p2_parse_time))
     total_times = list(map(sum, zip(p1_times, p2_times, p1_parse_times, p2_parse_times)))
+
+    # Header.
     print("Total Time:", total_time, "(s)")
+    print(f"Total part 1: {total_p1_time:.3f}s | {total_p1_time / total_time: 3.1%}")
+    print(f"Total part 2: {total_p2_time:.3f}s | {total_p2_time / total_time: 3.1%}")
+    print(f"Total parsing (P1&2): {total_p1_parse_time+total_p2_parse_time:.3f}s | {(total_p1_parse_time+total_p2_parse_time) / total_time: 3.1%}")
+    print()
+
+    # Print the days.
     for i in range(len(days)):
         day = days[i]
         day_str = str(day) if day >= 10 else f"0{day}"
-        print(f"Day {day :2}: {total_times[i] :1.3f}s | {total_times[i] / total_time:3.1%}")
+        print(f"Day {day :2}: {total_times[i] :1.3f}s | {total_times[i] / total_time: 3.1%}")
