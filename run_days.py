@@ -19,7 +19,7 @@ day_information = {
     4: (day_04.part1,   day_04.part2,       read_grid,          "day_04_ceres_search"),
     5: (day_05.part1,   day_05.part2,       read_line_blocks,   "day_05_print_queue"),
     6: (day_06.part1,   day_06.part2_graph, read_list_grid,     "day_06_guard_gallivant"),
-    7: (day_07.part1,   day_07.part2_parallel, day_07.read_equations, "day_07_bridge_repair"),
+    7: (day_07.part1,   day_07.part2, day_07.read_equations, "day_07_bridge_repair"),
     8: (day_08.part1,   day_08.part2,       read_grid,          "day_08_resonant_collinearity"),
     9: (day_09.part1,   day_09.part2,       read_line,          "day_09_disk_fragmenter"),
     10: (day_10.part1,  day_10.part2,       read_grid,          "day_10_hoof_it"),

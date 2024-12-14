@@ -1,5 +1,5 @@
 import math
-from functools import reduce
+from functools import reduce, cache
 from operator import add
 from typing import List
 import multiprocessing as mp
@@ -59,9 +59,33 @@ def backtracking_solver_p2(result, operands, i, cur):
             #backtracking_solver_p2(result, operands, i + 1, CAT(cur, operands[i])))
     )
 
+def slough(a: int, b: int):
+    a_str = str(a)
+    b_str = str(b)
+    if a_str.endswith(b_str) and a_str != b_str:
+        #return int(a_str[:-len(b_str)])
+        return int(a_str.removesuffix(b_str))
+    else:
+        return None
+
+# like 375x faster! I guess it helps that it fails often.
+def reverse_backtracking_solver_p2(operands, i, cur):
+    if i == 0:
+        return operands[0] == cur
+
+    sloughed = slough(cur, operands[i])
+    if sloughed is not None and reverse_backtracking_solver_p2(operands, i - 1, sloughed):
+        return True
+    if cur % operands[i] == 0 and reverse_backtracking_solver_p2(operands, i - 1, cur // operands[i]):
+        return True
+    if cur - operands[i] >= 0 and reverse_backtracking_solver_p2(operands, i - 1, cur - operands[i]):
+        return True
+    return False
+
 
 def can_solve_equation_p2(result, operands):
-    return backtracking_solver_p2(result, operands, 1, operands[0])
+    #return backtracking_solver_p2(result, operands, 1, operands[0])
+    return reverse_backtracking_solver_p2(operands, len(operands)-1, result)
 
 def eq_value_p2(resultoperands):
     result, operands = resultoperands
@@ -79,6 +103,10 @@ def part2_parallel(equations: List[tuple]) -> int:
     with mp.Pool() as pool:
         return reduce(add, pool.imap_unordered(eq_value_p2, equations))
 
+#def part2_parallel_reverse(equations: List[tuple]) -> int:
+#    with mp.Pool() as pool:
+#        return sum(pool.imap_unordered(eq_value_p2, equations))
+
 
 @Infix
 def CAT(a, b):
@@ -95,7 +123,7 @@ if __name__ == '__main__':
     get_results("P1 Example", part1, read_equations, "example.txt")
     get_results("P1", part1, read_equations, "input.txt")
 
-    get_results("P2 Example", part2, read_equations, "example.txt")
-    get_results("P2", part2, read_equations, "input.txt")
+    get_results("P2 Example", part2, read_equations, "example.txt", expected=11387)
+    get_results("P2", part2, read_equations, "input.txt", expected=223472064194845)
 
-    get_results("P2 Parallel", part2_parallel, read_equations, "input.txt")
+    get_results("P2 Parallel", part2_parallel, read_equations, "input.txt", expected=223472064194845)
