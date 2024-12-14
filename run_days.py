@@ -3,6 +3,7 @@ import os
 from util.timer import get_results
 from parser.parser import read_grid, read_list_grid, read_line, read_line_blocks, read_lines
 
+import day_02_red_nosed_reports.red_nosed_reports as day_02
 import day_03_mull_it_over.mull_it_over         as day_03
 import day_04_ceres_search.search               as day_04
 import day_05_print_queue.print_order           as day_05
@@ -18,6 +19,7 @@ import day_14_restroom_redoubt.restroom_redoubt as day_14
 
 day_information = {
 # DAY: (p1, p2, input_fn, [input_fn2], "dir")
+    2: (day_02.part1,   day_02.part2,       read_lines,         "day_02_red_nosed_reports"),
     3: (day_03.part1,   day_03.part2,       read_lines,         "day_03_mull_it_over"),
     4: (day_04.part1,   day_04.part2,       read_grid,          "day_04_ceres_search"),
     5: (day_05.part1,   day_05.part2,       read_line_blocks,   "day_05_print_queue"),
