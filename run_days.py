@@ -1,7 +1,7 @@
 import os
 
 from util.timer import get_results
-from parser.parser import read_grid, read_list_grid, read_line, read_line_blocks
+from parser.parser import read_grid, read_list_grid, read_line, read_line_blocks, read_lines
 
 import day_04_ceres_search.search               as day_04
 import day_05_print_queue.print_order           as day_05
@@ -13,6 +13,7 @@ import day_10_hoof_it.height_hiking             as day_10
 import day_11_plutonian_pebbles.blinking_pebbles as day_11
 import day_12_garden_groups.garden_groups       as day_12
 import day_13_claw_contraption.claw_contraption as day_13
+import day_14_restroom_redoubt.restroom_redoubt as day_14
 
 day_information = {
 # DAY: (p1, p2, input_fn, [input_fn2], "dir")
@@ -26,6 +27,7 @@ day_information = {
     11: (day_11.part1,  day_11.part2,       read_line,          "day_11_plutonian_pebbles"),
     12: (day_12.part1,  day_12.part2,       read_grid,          "day_12_garden_groups"),
     13: (day_13.part1,  day_13.part2,       read_line_blocks,   "day_13_claw_contraption"),
+    14: (day_14.part1,  None,               read_lines,         "day_14_restroom_redoubt"),
 
 }
 

@@ -8,6 +8,9 @@ def time_with_output(func):
     return res[0], elapsed
 
 def get_results(name, solution, parse_fn, fp, **kwargs):
+    if solution is None:
+        print(f"{name}: N/A")
+        return None, 0, 0
     input, parse_time = time_with_output(lambda: parse_fn(fp))
     res, elapsed = time_with_output(lambda: solution(input))
 

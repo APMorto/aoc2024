@@ -3,6 +3,7 @@ from collections import defaultdict
 from functools import reduce
 from itertools import chain
 from typing import List
+import matplotlib.pyplot as plt
 
 from parser.parser import read_lines
 from util.timer import get_results
@@ -28,23 +29,18 @@ def part1(lines: List[str]):
     h = int(lines[1][2:])
     half_w = w // 2 if w % 2 == 1 else None
     half_h = h // 2 if h % 2 == 1 else None
-    #print(half_w, half_h)
 
     STEPS = 100
 
-    #final_position_counts = defaultdict(int)
     quadrant_counts = [[0, 0], [0, 0]]
     for px, py, vx, vy in read_robots(lines):
         final_x = (px + vx * STEPS) % w
         final_y = (py + vy * STEPS) % h
-        #final_position_counts[(final_x, final_y)] += 1
 
         # Positions on the exact middle dont count.
         if final_x == half_w or final_y == half_h:
             continue
 
-        #print(final_x // half_w)
-        #print(final_y // half_h)
         quadrant_counts[final_x < half_w][final_y < half_h] += 1
     return reduce(operator.mul, chain(*quadrant_counts), 1)
 
@@ -61,6 +57,7 @@ def part2(lines: List[str]):
     blocks_h = h // BLOCKSIZE + 1
     num_evaluated = 1
     total = 0
+    scores = []
 
     for steps in range(134, 10509):
         final_position_counts = defaultdict(int)
@@ -94,10 +91,13 @@ def part2(lines: List[str]):
                         print(" ", end="")
                 if r != h-1:
                     print()
+            plt.hist(scores.copy(), bins=100)
+            plt.show()
             input()
             print()
         num_evaluated += 1
         total += block_score
+        scores.append(block_score)
 
 # > 134
 # < 10509
