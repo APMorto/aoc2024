@@ -50,11 +50,61 @@ def part1(lines: List[str]):
 
 
 def part2(lines: List[str]):
-    return None
+    w = int(lines[0][2:])
+    h = int(lines[1][2:])
+    half_w = w // 2 if w % 2 == 1 else None
+    half_h = h // 2 if h % 2 == 1 else None
+    #print(half_w, half_h)
+    bot_positions = tuple(read_robots(lines))
+    BLOCKSIZE = 5
+    blocks_w = w // BLOCKSIZE + 1
+    blocks_h = h // BLOCKSIZE + 1
+    num_evaluated = 1
+    total = 0
+
+    for steps in range(134, 10509):
+        final_position_counts = defaultdict(int)
+        blocks = [[0] * blocks_w for _ in range(blocks_h)]
+        for px, py, vx, vy in bot_positions:
+
+            final_x = (px + vx * steps) % w
+            final_y = (py + vy * steps) % h
+            final_position_counts[(final_x, final_y)] += 1
+        # I assert that things will be pretty grouped for a tree
+        for r in range(h):
+            for c in range(w):
+                if final_position_counts[(c, r)] > 0:
+                    blocks[r // BLOCKSIZE][c // BLOCKSIZE] += 1
+
+        block_score = 0
+        for block_amt in chain(*blocks):
+            block_score += block_amt ** 2
+
+
+        # We have block counts
+        # take the square and whatver
+        print("Steps =", steps)
+
+        if block_score * 0.5 > total / num_evaluated:
+            for r in range(h):
+                for c in range(w):
+                    if final_position_counts[(c, r)] > 0:
+                        print("#", end="")
+                    else:
+                        print(" ", end="")
+                if r != h-1:
+                    print()
+            input()
+            print()
+        num_evaluated += 1
+        total += block_score
+
+# > 134
+# < 10509
 
 if __name__ == '__main__':
     get_results("P1 Example", part1, read_lines, "example.txt", expected=12)
     get_results("P1", part1, read_lines, "input.txt")
 
-    get_results("P2 Example", part2, read_lines, "example.txt")
+    #get_results("P2 Example", part2, read_lines, "example.txt")
     get_results("P2", part2, read_lines, "input.txt")
