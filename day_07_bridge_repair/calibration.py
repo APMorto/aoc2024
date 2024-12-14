@@ -26,10 +26,19 @@ def backtracking_solver(result, operands, i, cur):
 
     return backtracking_solver(result, operands, i + 1, cur+operands[i]) or backtracking_solver(result, operands, i + 1, cur*operands[i])
 
+def reverse_backtracking_solver_p1(operands, i, cur):
+    if i == 0:
+        return operands[0] == cur
+
+    if cur % operands[i] == 0 and reverse_backtracking_solver_p1(operands, i - 1, cur // operands[i]):
+        return True
+    if cur - operands[i] >= 0 and reverse_backtracking_solver_p1(operands, i - 1, cur - operands[i]):
+        return True
+    return False
 
 def can_solve_equation(result, operands):
-    return backtracking_solver(result, operands, 1, operands[0])
-
+    #return backtracking_solver(result, operands, 1, operands[0])
+    return reverse_backtracking_solver_p1(operands, len(operands)-1, result)
 
 def part1(equations: List[tuple]) -> int:
     out = 0
@@ -120,8 +129,8 @@ def cat(a, b):
 # We only get at most 12 elements, so we can easily brute force this.
 
 if __name__ == '__main__':
-    get_results("P1 Example", part1, read_equations, "example.txt")
-    get_results("P1", part1, read_equations, "input.txt")
+    get_results("P1 Example", part1, read_equations, "example.txt", expected=3749)
+    get_results("P1", part1, read_equations, "input.txt", expected=975671981569)
 
     get_results("P2 Example", part2, read_equations, "example.txt", expected=11387)
     get_results("P2", part2, read_equations, "input.txt", expected=223472064194845)
