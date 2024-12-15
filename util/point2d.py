@@ -51,6 +51,9 @@ class Point2D:
 
     def __hash__(self):
         return hash((self.x, self.y))
+        #a = self.x # https://stackoverflow.com/questions/919612/mapping-two-integers-to-one-in-a-unique-and-deterministic-way
+        #b = self.y # Slower.
+        #return (a * a + a + b) if a >= b else (a + b * b)
 
     def __eq__(self, other):
         return self.x == other.x and self.y == other.y

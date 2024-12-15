@@ -14,7 +14,7 @@ direction_map = {
     'v': Point2D(0, 1),
 }
 
-replace_strs = {
+replace_strs_p2_expansion = {
     "#": "##",
     ".": "..",
     "@": "@.",
@@ -30,7 +30,6 @@ def score_grid(grid: List[List[str]], desired='O') -> int:
             if grid[r][c] == desired:
                 out += 100 * r + c
     return out
-
 
 def part1(line_blocks):
     grid_str = line_blocks[0]
@@ -70,7 +69,7 @@ def part1(line_blocks):
     return score_grid(grid.grid)
 
 def widen_grid(grid_str: List[str]):
-    return ["".join(replace_strs[c] for c in line) for line in grid_str]
+    return ["".join(replace_strs_p2_expansion[c] for c in line) for line in grid_str]
 
 def check_if_can_move_UD_p2(grid: Grid2DDense, pos: Point2D, direction: Point2D, seen=None):
     seen = set() if seen is None else seen
@@ -101,33 +100,52 @@ def move_UD_p2_set(grid: Grid2DDense, direction: Point2D, seen):
             grid.set(p, '.')
 
 
-    """   c = grid.get(pos)
+def move_UD_p2_non_set(grid: Grid2DDense, pos, direction: Point2D):
+    c = grid.get(pos)
     if c == '#':
         raise ValueError("Somehow propagated to invalid value in moving: " + str(c))
     elif c == '.':
-        return
-    elif """
+        grid.set(pos, grid.get(pos - direction))
+    elif c == '[':
+        move_UD_p2_non_set(grid, pos + direction, direction)
+        move_UD_p2_non_set(grid, pos + direction + Point2D(1, 0), direction)
+    else:
+        move_UD_p2_non_set(grid, pos + direction, direction)
+        move_UD_p2_non_set(grid, pos + direction + Point2D(-1, 0), direction)
+
+# We may move multiple times.
+def check_if_can_move_UD_p2_non_set(grid: Grid2DDense, pos: Point2D, direction: Point2D):
+    # Exponential worst case
+    c = grid.get(pos)
+    if c == '#':
+        return False
+    elif c == '.':
+        return True
+    elif c == '[':
+        # Check both above.
+        return check_if_can_move_UD_p2_non_set(grid, Point2D(pos.x, pos.y+direction.y), direction) and check_if_can_move_UD_p2_non_set(grid, Point2D(pos.x+1, pos.y+direction.y), direction)
+    else: # c == ']'
+        # Basic check to not branch on perfect aligned boxes
+        if grid.get(pos - direction) == ']':
+            return True
+        return check_if_can_move_UD_p2_non_set(grid, Point2D(pos.x-1, pos.y + direction.y), direction) and check_if_can_move_UD_p2_non_set(grid, Point2D(pos.x, pos.y + direction.y), direction)
+
 
 
 def part2(line_blocks):
     grid_str = widen_grid(line_blocks[0])
     move_sequence = "".join(line_blocks[1])
     grid = Grid2DDense([list(line) for line in grid_str])
-    h, w = grid.shape
+    #h, w = grid.shape
 
     bot_pos = None
     for r, c in grid.row_major_indexes():
         if grid_str[r][c] == '@':
             bot_pos = Point2D(c, r)
             break
-    #print(bot_pos)
     grid.set(bot_pos, '.')
-    #grid.display()
 
     for move in move_sequence:
-        #print(move)
-        #grid.set(bot_pos, '.')
-
         direction = direction_map[move]
         initial_pos = bot_pos + direction
         cur_pos = initial_pos
@@ -140,7 +158,7 @@ def part2(line_blocks):
 
             # If empty after boxes (if any)
             if grid.get(cur_pos) == '.':
-                # Shift it down.
+                # Shift it down. Takes ~0.006s
                 p = cur_pos
                 while p.x != initial_pos.x:
                     next_p = p - direction
@@ -149,31 +167,22 @@ def part2(line_blocks):
                 grid.set(p, '.')
                 bot_pos = initial_pos
 
-                #grid.set(bot_pos, '@')
-                #grid.display()
-                #print("Shifted LR")
-                #print("new bot pos", bot_pos)
-
-        # U/D
-        else:
+        else:   # U/D (takes like 2/3 of the total time)
             # 2 approaches:
             # Check all with set, then move the set
             # Or, check all (maybe set), then move with standard dfs
             seen = set()
 
             if check_if_can_move_UD_p2(grid, initial_pos, direction, seen):
-                move_UD_p2_set(grid, direction, seen)
+                move_UD_p2_set(grid, direction, seen)   # Takes 0.004s
                 bot_pos = initial_pos
 
-                #grid.set(bot_pos, '@')
-                #grid.display()
-                #print("Moved UD")
+            # Would be faster, but there is a branching issue with checking, and a correctness duplication issue with actually moving
+            #if check_if_can_move_UD_p2_non_set(grid, cur_pos, direction):
+            #    move_UD_p2_non_set(grid, cur_pos, direction)
+            #    bot_pos = initial_pos
 
 
-
-
-        #grid.set(bot_pos, '@')
-        #grid.display()
     return score_grid(grid.grid, desired='[')
 
 
