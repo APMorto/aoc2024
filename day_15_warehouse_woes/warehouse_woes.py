@@ -1,3 +1,5 @@
+from six import moves
+
 from util.point2d import Point2D
 from util.timer import get_results
 from parser.parser import read_lines, read_line, read_grid, read_list_grid, read_line_blocks
@@ -19,13 +21,13 @@ replace_strs = {
     "O": "[]"
 }
 
-def score_grid(grid: List[List[str]]) -> int:
+def score_grid(grid: List[List[str]], desired='O') -> int:
     h = len(grid)
     w = len(grid[0])
     out = 0
     for r in range(h):
         for c in range(w):
-            if grid[r][c] == 'O':
+            if grid[r][c] == desired:
                 out += 100 * r + c
     return out
 
@@ -70,6 +72,43 @@ def part1(line_blocks):
 def widen_grid(grid_str: List[str]):
     return ["".join(replace_strs[c] for c in line) for line in grid_str]
 
+def check_if_can_move_UD_p2(grid: Grid2DDense, pos: Point2D, direction: Point2D, seen=None):
+    seen = set() if seen is None else seen
+    if pos in seen:
+        return True
+    seen.add(pos)
+    c = grid.get(pos)
+    if c == '#':
+        return False
+    elif c == '.':
+        return True
+
+    # []
+    if c == '[':
+        return check_if_can_move_UD_p2(grid, pos + direction, direction, seen) and check_if_can_move_UD_p2(grid, pos + Point2D(1, 0), direction, seen)
+    elif c == ']':
+        return check_if_can_move_UD_p2(grid, pos + direction, direction, seen) and check_if_can_move_UD_p2(grid, pos + Point2D(-1, 0), direction, seen)
+    else:
+        raise ValueError("Somehow propagated to invalid value: " + str(c))
+
+def move_UD_p2_set(grid: Grid2DDense, direction: Point2D, seen):
+    sorted_seen = sorted(seen, key=lambda p: p.y, reverse=direction.y > 0)
+    for p in sorted_seen:
+        before = p - direction
+        if before in seen:
+            grid.set(p, grid.get(before))
+        else:
+            grid.set(p, '.')
+
+
+    """   c = grid.get(pos)
+    if c == '#':
+        raise ValueError("Somehow propagated to invalid value in moving: " + str(c))
+    elif c == '.':
+        return
+    elif """
+
+
 def part2(line_blocks):
     grid_str = widen_grid(line_blocks[0])
     move_sequence = "".join(line_blocks[1])
@@ -81,14 +120,15 @@ def part2(line_blocks):
         if grid_str[r][c] == '@':
             bot_pos = Point2D(c, r)
             break
-    print(bot_pos)
+    #print(bot_pos)
     grid.set(bot_pos, '.')
-    grid.display()
+    #grid.display()
 
     for move in move_sequence:
+        #print(move)
         #grid.set(bot_pos, '.')
-        direction = direction_map[move]
 
+        direction = direction_map[move]
         initial_pos = bot_pos + direction
         cur_pos = initial_pos
 
@@ -110,12 +150,31 @@ def part2(line_blocks):
                 bot_pos = initial_pos
 
                 #grid.set(bot_pos, '@')
-                grid.display()
-                print("Shifted LR")
-                print("new bot pos", bot_pos)
+                #grid.display()
+                #print("Shifted LR")
+                #print("new bot pos", bot_pos)
+
+        # U/D
+        else:
+            # 2 approaches:
+            # Check all with set, then move the set
+            # Or, check all (maybe set), then move with standard dfs
+            seen = set()
+
+            if check_if_can_move_UD_p2(grid, initial_pos, direction, seen):
+                move_UD_p2_set(grid, direction, seen)
+                bot_pos = initial_pos
+
+                #grid.set(bot_pos, '@')
+                #grid.display()
+                #print("Moved UD")
+
+
+
 
         #grid.set(bot_pos, '@')
         #grid.display()
+    return score_grid(grid.grid, desired='[')
 
 
 if __name__ == '__main__':
@@ -124,4 +183,4 @@ if __name__ == '__main__':
     get_results("P1", part1, read_line_blocks, "input.txt")
 
     get_results("P2 Example", part2, read_line_blocks, "example.txt", expected=9021)
-    #get_results("P2", part2, read_line_blocks, "input.txt")
+    get_results("P2", part2, read_line_blocks, "input.txt")

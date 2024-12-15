@@ -49,6 +49,12 @@ class Point2D:
     def __iter__(self):
         return iter((self.x, self.y))
 
+    def __hash__(self):
+        return hash((self.x, self.y))
+
+    def __eq__(self, other):
+        return self.x == other.x and self.y == other.y
+
 # Default direction pointers.
 Point2D.RIGHT = Point2D(0, 1)
 Point2D.DOWN =  Point2D(1, 0)
