@@ -1,3 +1,4 @@
+from copy import copy
 from typing import List, Iterable
 
 from util.point2d import Point2D
@@ -18,6 +19,25 @@ class Grid2DDense:
 
     def swap(self, point1: Point2D, point2: Point2D):
         self.grid[point1.y][point1.x], self.grid[point2.y][point2.x] = self.grid[point2.y][point2.x], self.grid[point1.y][point1.x]
+
+    def horizontal_shift(self, row: int, left: int, right: int, offset: int, fill):
+        # Does not work.
+        if offset == 0:
+            return
+        # Right is inclusive.
+        left, right = min(left, right), max(left, right)
+        lo = left + offset
+        ro = right + offset
+        line = self.grid[row]
+        print(row, left, right, offset)
+        print("line before offset", line)
+        line[lo : ro+1] = line[left : right+1]
+        if offset > 0:
+            line[left : lo] = [fill] * offset
+        else:
+            line[ro+1 : right+1] = [fill] * (-offset)
+        print("line post offset  ", line)
+
 
     def __getitem__(self, item):
         return self.grid[item]

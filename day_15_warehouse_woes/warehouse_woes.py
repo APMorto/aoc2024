@@ -148,11 +148,11 @@ def part2(line_blocks):
     for move in move_sequence:
         direction = direction_map[move]
         initial_pos = bot_pos + direction
-        cur_pos = initial_pos
 
         # L/R
         if direction.y == 0:
             # Move across boxes.
+            cur_pos = initial_pos
             while grid.get(cur_pos) in '[]':
                 cur_pos = cur_pos + direction
 
@@ -165,16 +165,20 @@ def part2(line_blocks):
                     grid.set(p, grid.get(next_p))
                     p = next_p
                 grid.set(p, '.')
+                #if cur_pos != initial_pos:
+                #    grid.horizontal_shift(cur_pos.y, initial_pos.x, cur_pos.x, direction.x, '.')
                 bot_pos = initial_pos
 
         else:   # U/D (takes like 2/3 of the total time)
             # 2 approaches:
             # Check all with set, then move the set
             # Or, check all (maybe set), then move with standard dfs
-            seen = set()
-
-            if check_if_can_move_UD_p2(grid, initial_pos, direction, seen):
-                move_UD_p2_set(grid, direction, seen)   # Takes 0.004s
+            if grid.get(initial_pos) != '.':
+                seen = set()
+                if check_if_can_move_UD_p2(grid, initial_pos, direction, seen):
+                    move_UD_p2_set(grid, direction, seen)   # Takes 0.004s
+                    bot_pos = initial_pos
+            else:
                 bot_pos = initial_pos
 
             # Would be faster, but there is a branching issue with checking, and a correctness duplication issue with actually moving
