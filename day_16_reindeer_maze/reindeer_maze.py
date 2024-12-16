@@ -10,6 +10,8 @@ from util.grid2d import Grid2DDense
 from util.directions import Direction2DCR
 from util.datastructures import MutableMinHeap
 
+from marco_del_mastro_solution import part1_marco_del_maestro
+
 # A* for this is like, BARELY any better.
 def part1(grid_list):
     grid = Grid2DDense(grid_list)
@@ -181,6 +183,7 @@ if __name__ == '__main__':
     get_results("P1 Example", part1, read_grid, "example2.txt", expected=11048)
     get_results("P1", part1, read_grid, "input.txt")
     get_results("P1 Mutable Min Heap", part1_mutable_minheap, read_grid, "input.txt")
+    get_results("P1 Marco", part1_marco_del_maestro, lambda x: x, "input.txt")
 
     get_results("P2 Example", part2, read_grid, "example.txt", expected=45)
     get_results("P2 Example", part2, read_grid, "example2.txt", expected=64)
