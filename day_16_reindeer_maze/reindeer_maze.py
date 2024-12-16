@@ -48,14 +48,99 @@ def part1(grid_list):
     return math.inf
 
 
-def part2(grid):
-    pass
+def part2(grid_list):
+    # Which tiles are part of ANY best path?
+    # we could do one forward and one reverse path
+    # and then any states which have sum of cost from + to being best is ok
+    grid = Grid2DDense(grid_list)
+    start_pos = Point2D(*reversed(seek_character(grid_list, 'S')))
+    end_pos = Point2D(*reversed(seek_character(grid_list, 'E')))
 
+    heap: List[Tuple[int, Point2D, Direction2DCR]] = []
+    heapq.heappush(heap, (0, start_pos, Direction2DCR.RIGHT)) # minheap
+
+    best_seen_forward = collections.defaultdict(lambda: math.inf)
+    best_seen_forward[(start_pos, Direction2DCR.RIGHT)] = 0
+    end_cost = math.inf
+
+    while len(heap) > 0:
+        cost, pos, direction = heapq.heappop(heap)
+        if pos == end_pos:
+            end_cost = cost
+        if cost > end_cost:
+            break
+        if best_seen_forward[(pos, direction)] < cost:
+            continue
+
+        # Try moving forward
+        fwd = pos + direction.point_offset()
+        if grid.get(fwd) != '#' and best_seen_forward[(fwd, direction)] > cost+1:
+            best_seen_forward[(fwd, direction)] = cost+1
+            heapq.heappush(heap, (cost+1, fwd, direction))
+
+        # Try turning
+        left = direction.turn_left()
+        if best_seen_forward[(pos, left)] > cost+1000:
+            best_seen_forward[(pos, left)] = cost+1000
+            heapq.heappush(heap, (cost+1000, pos, left))
+
+        right = direction.turn_right()
+        if best_seen_forward[(pos, right)] > cost+1000:
+            best_seen_forward[(pos, right)] = cost+1000
+            heapq.heappush(heap, (cost+1000, pos, right))
+
+    best_path_cost = end_cost
+
+
+    # REVERSE
+    heap.clear()
+    best_seen_reverse = collections.defaultdict(lambda: math.inf)
+    end_cost = math.inf
+    for direction in Direction2DCR:
+        heapq.heappush(heap, (0, end_pos, direction))
+        best_seen_reverse[(end_pos, direction)] = 0
+
+    while len(heap) > 0:
+        cost, pos, direction = heapq.heappop(heap)
+        if pos == start_pos and direction == Direction2DCR.RIGHT:
+            end_cost = cost
+        if cost > end_cost:
+            break
+        if best_seen_reverse[(pos, direction)] < cost:
+            continue
+
+        # Try moving forward
+        fwd = pos - direction.point_offset()
+        if grid.get(fwd) != '#' and best_seen_reverse[(fwd, direction)] > cost+1:
+            best_seen_reverse[(fwd, direction)] = cost+1
+            heapq.heappush(heap, (cost+1, fwd, direction))
+
+        # Try turning
+        left = direction.turn_left()
+        if best_seen_reverse[(pos, left)] > cost+1000:
+            best_seen_reverse[(pos, left)] = cost+1000
+            heapq.heappush(heap, (cost+1000, pos, left))
+
+        right = direction.turn_right()
+        if best_seen_reverse[(pos, right)] > cost+1000:
+            best_seen_reverse[(pos, right)] = cost+1000
+            heapq.heappush(heap, (cost+1000, pos, right))
+
+    out = 0
+    for p in grid.pos_iter():
+        if grid.get(p) != '#':
+            for direction in Direction2DCR:
+                state = (p, direction)
+                if best_seen_forward[state] + best_seen_reverse[state] == best_path_cost:
+                    out += 1
+                    break
+    return out
 
 if __name__ == '__main__':
     get_results("P1 Example", part1, read_grid, "example.txt", expected=7036)
     get_results("P1 Example", part1, read_grid, "example2.txt", expected=11048)
     get_results("P1", part1, read_grid, "input.txt")
 
-    get_results("P2 Example", part2, read_grid, "example.txt")
+    get_results("P2 Example", part2, read_grid, "example.txt", expected=45)
+    get_results("P2 Example", part2, read_grid, "example2.txt", expected=64)
     get_results("P2", part2, read_grid, "input.txt")

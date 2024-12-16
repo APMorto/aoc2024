@@ -49,6 +49,9 @@ class Grid2DDense:
     def row_major_points(self):
         return (Point2D(r, c) for r in range(self.h) for c in range(self.w))
 
+    def pos_iter(self):
+        return (Point2D(c, r) for r in range(self.h) for c in range(self.w) )
+
     def __len__(self):
         return self.h * self.w
         #return len(self.grid)
