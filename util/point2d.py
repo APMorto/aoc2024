@@ -34,6 +34,9 @@ class Point2D:
     def dot(self, other: "Point2D"):
         return self.x * other.x + self.y * other.y
 
+    def manhattan_distance(self, other: "Point2D"):
+        return abs(self.x - other.x) + abs(self.y - other.y)
+
     def __add__(self, other):
         return Point2D(self.x + other.x, self.y + other.y)
 

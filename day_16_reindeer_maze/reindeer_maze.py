@@ -15,14 +15,14 @@ def part1(grid_list):
     end_pos = Point2D(*reversed(seek_character(grid_list, 'E')))
     initial_state = (start_pos, Direction2DCR.RIGHT)   # (cost, pos, dir
 
-    heap: List[Tuple[int, Point2D, Direction2DCR]] = []
-    heapq.heappush(heap, (0, start_pos, Direction2DCR.RIGHT)) # minheap
+    heap: List[Tuple[int, int, Point2D, Direction2DCR]] = []    # heap[i] = (A* cost, real cost, pos, dir
+    heapq.heappush(heap, (0 + start_pos.manhattan_distance(end_pos), 0, start_pos, Direction2DCR.RIGHT)) #
 
     best_seen = collections.defaultdict(lambda: math.inf)
     best_seen[initial_state] = 0
 
     while len(heap) > 0:
-        cost, pos, direction = heapq.heappop(heap)
+        a_cost, cost, pos, direction = heapq.heappop(heap)
         if pos == end_pos:
             return cost
         if best_seen[(pos, direction)] < cost:
@@ -32,18 +32,18 @@ def part1(grid_list):
         fwd = pos + direction.point_offset()
         if grid.get(fwd) != '#' and best_seen[(fwd, direction)] > cost+1:
             best_seen[(fwd, direction)] = cost+1
-            heapq.heappush(heap, (cost+1, fwd, direction))
+            heapq.heappush(heap, (cost+1 + fwd.manhattan_distance(end_pos), cost+1, fwd, direction))
 
         # Try turning
         left = direction.turn_left()
         if best_seen[(pos, left)] > cost+1000:
             best_seen[(pos, left)] = cost+1000
-            heapq.heappush(heap, (cost+1000, pos, left))
+            heapq.heappush(heap, (a_cost + 1000, cost+1000, pos, left))
 
         right = direction.turn_right()
         if best_seen[(pos, right)] > cost+1000:
             best_seen[(pos, right)] = cost+1000
-            heapq.heappush(heap, (cost+1000, pos, right))
+            heapq.heappush(heap, (a_cost+1000, cost+1000, pos, right))
 
     return math.inf
 

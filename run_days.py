@@ -18,6 +18,7 @@ import day_12_garden_groups.garden_groups       as day_12
 import day_13_claw_contraption.claw_contraption as day_13
 import day_14_restroom_redoubt.restroom_redoubt as day_14
 import day_15_warehouse_woes.warehouse_woes     as day_15
+import day_16_reindeer_maze.reindeer_maze       as day_16
 
 day_information = {
 # DAY: (p1, p2, input_fn, [input_fn2], "dir")
@@ -36,6 +37,7 @@ day_information = {
     13: (day_13.part1,  day_13.part2,       read_line_blocks,   "day_13_claw_contraption"),
     14: (day_14.part1,  None,               read_lines,         "day_14_restroom_redoubt"),
     15: (day_15.part1,  day_15.part2,       read_line_blocks,   "day_15_warehouse_woes"),
+    16: (day_16.part1,  day_16.part2,       read_grid,          "day_16_reindeer_maze"),
 
 }
 
