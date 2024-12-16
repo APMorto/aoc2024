@@ -135,8 +135,10 @@ def part2(grid_list):
             heapq.heappush(heap, (cost+1000, pos, right))
 
     best_path_cost = end_cost
+    best_positions = set()
 
     # REVERSE
+    # We only backtrack along the best possible paths, so this is very fast.
     heap.clear()
     best_seen_reverse = collections.defaultdict(lambda: math.inf)
     end_cost = math.inf
@@ -150,8 +152,9 @@ def part2(grid_list):
             end_cost = cost
         if cost > end_cost:
             break
-        if best_seen_reverse[(pos, direction)] < cost:
+        if best_seen_reverse[(pos, direction)] + best_seen_forward[(pos, direction)] > best_path_cost:
             continue
+        best_positions.add(pos)
 
         # Try moving forward
         fwd = pos - direction.point_offset()
@@ -170,15 +173,8 @@ def part2(grid_list):
             best_seen_reverse[(pos, right)] = cost+1000
             heapq.heappush(heap, (cost+1000, pos, right))
 
-    out = 0
-    for p in grid.pos_iter():
-        if grid.get(p) != '#':
-            for direction in Direction2DCR:
-                state = (p, direction)
-                if best_seen_forward[state] + best_seen_reverse[state] == best_path_cost:
-                    out += 1
-                    break
-    return out
+    return len(best_positions)
+
 
 if __name__ == '__main__':
     get_results("P1 Example", part1, read_grid, "example.txt", expected=7036)
