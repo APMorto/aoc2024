@@ -8,7 +8,9 @@ from util.util import seek_character
 from util.point2d import Point2D
 from util.grid2d import Grid2DDense
 from util.directions import Direction2DCR
+from util.datastructures import MutableMinHeap
 
+# A* for this is like, BARELY any better.
 def part1(grid_list):
     grid = Grid2DDense(grid_list)
     start_pos = Point2D(*reversed(seek_character(grid_list, 'S')))
@@ -21,9 +23,14 @@ def part1(grid_list):
     best_seen = collections.defaultdict(lambda: math.inf)
     best_seen[initial_state] = 0
 
+    #examined = 0
+    #score = 0
     while len(heap) > 0:
+        #examined += 1
+        #score += math.log2(len(heap))
         a_cost, cost, pos, direction = heapq.heappop(heap)
         if pos == end_pos:
+            #print("examined", examined, "score", score)
             return cost
         if best_seen[(pos, direction)] < cost:
             continue
@@ -45,6 +52,44 @@ def part1(grid_list):
             best_seen[(pos, right)] = cost+1000
             heapq.heappush(heap, (a_cost+1000, cost+1000, pos, right))
 
+    #print("examined", examined)
+    return math.inf
+
+def part1_mutable_minheap(grid_list):
+    grid = Grid2DDense(grid_list)
+    start_pos = Point2D(*reversed(seek_character(grid_list, 'S')))
+    end_pos = Point2D(*reversed(seek_character(grid_list, 'E')))
+
+    heap = MutableMinHeap()
+    heap.update((start_pos, Direction2DCR.RIGHT), (start_pos.manhattan_distance(end_pos), 0))
+    seen = set()
+
+    examined = 0
+    score = 0
+    while len(heap) > 0:
+        score += math.log2(len(heap))
+        examined += 1
+        #a_cost, cost, pos, direction = heapq.heappop(heap)
+        (pos, direction), (a_cost, cost) = heap.pop()
+        seen.add((pos, direction))
+        if pos == end_pos:
+            print("examined", examined, "score", score)
+            return cost
+
+        # Try moving forward
+        fwd = pos + direction.point_offset()
+        if (fwd, direction) not in seen and grid.get(fwd) != '#':
+            heap.update_lower((fwd, direction), (cost+1 + fwd.manhattan_distance(end_pos) ,cost+1))
+
+        # Try turning.
+        right = direction.turn_right()
+        if (pos, right) not in seen:
+            heap.update_lower((pos, right), (a_cost + 1000, cost + 1000))
+        left = direction.turn_left()
+        if (pos, left) not in seen:
+            heap.update_lower((pos, left), (a_cost+1000, cost + 1000))
+
+    print("Examined", examined)
     return math.inf
 
 
@@ -90,7 +135,6 @@ def part2(grid_list):
             heapq.heappush(heap, (cost+1000, pos, right))
 
     best_path_cost = end_cost
-
 
     # REVERSE
     heap.clear()
@@ -140,6 +184,7 @@ if __name__ == '__main__':
     get_results("P1 Example", part1, read_grid, "example.txt", expected=7036)
     get_results("P1 Example", part1, read_grid, "example2.txt", expected=11048)
     get_results("P1", part1, read_grid, "input.txt")
+    get_results("P1 Mutable Min Heap", part1_mutable_minheap, read_grid, "input.txt")
 
     get_results("P2 Example", part2, read_grid, "example.txt", expected=45)
     get_results("P2 Example", part2, read_grid, "example2.txt", expected=64)

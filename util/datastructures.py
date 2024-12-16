@@ -76,13 +76,18 @@ class MutableMinHeap:
     def top(self):
         return self.heap[0]
 
-    def pop(self):
+    def pop(self) -> tuple:
         out = self.heap[0]
+        outValue = self.keyValues[out]
         del self.keyIndices[out]
         del self.keyValues[out]
-        self.heap[0] = self.heap.pop()
-        self.keyIndices[self.heap[0]] = 0
-        self.siftDown(0)
+        # Place last element at index 0.
+        self.heap[0] = self.heap[-1]
+        self.heap.pop()
+        if len(self.heap) > 0:
+            self.keyIndices[self.heap[0]] = 0
+            self.siftDown(0)
+        return out, outValue
 
     def swap(self, i, j):
         ival, jval = self.heap[i], self.heap[j]
@@ -133,6 +138,13 @@ class MutableMinHeap:
                 self.siftUp(self.keyIndices[key])
             elif newVal > oldVal:
                 self.siftDown(self.keyIndices[key])
+
+    def update_lower(self, key, newVal):
+        if not (key in self.keyValues and self.keyValues[key] <= newVal):
+            self.update(key, newVal)
+
+    def __len__(self):
+        return len(self.heap)
 
     def __str__(self):
         return str([(key, self.keyValues[key]) for key in self.heap]) + str(self.keyIndices)
