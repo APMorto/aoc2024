@@ -4,7 +4,7 @@ from util.point2d import Point2D
 from util.timer import get_results
 from parser.parser import read_lines, read_line, read_grid, read_list_grid, read_line_blocks
 from typing import List
-from util.util import seek_character, seek_character_point
+from util.util import seek_character, seek_character_point, rotate_matrix
 from util.grid2d import Grid2DDense
 
 from sortedcontainers import SortedList
@@ -133,13 +133,20 @@ def part2_sliding_window(list_grid: List[str]):
     h, w = len(list_grid), len(list_grid[0])
 
     out = 0
-    out += sliding_window(start_distances, end_distances)
+    out += sliding_window(start_distances, end_distances, best_non_cheated)
+    for _ in range(3):
+        start_distances = rotate_matrix(start_distances)
+        end_distances = rotate_matrix(end_distances)
+        out += sliding_window(start_distances, end_distances, best_non_cheated)
+
+    return out
 
 
-def sliding_window(to_costs: List[List], from_costs: List[list]):
+def sliding_window(to_costs: List[List], from_costs: List[list], best_distance: int):
     h, w = len(from_costs), len(from_costs[0])
     assert len(to_costs) == h and len(to_costs[0]) == w
 
+    out = 0
     SAVE_AMT = 100
     DIST = 20
 
@@ -148,26 +155,26 @@ def sliding_window(to_costs: List[List], from_costs: List[list]):
 
     # For each row, perform the sliding window, using this rows values as sources.
     for main_row in range(h):
-        print("\n############################################ Main Row: ", main_row)
+        #print("\n############################################ Main Row: ", main_row)
         frontier = SortedList() # May contain duplicate values.
 
         # Add in the initial values.
         for init_row in range(max(main_row - DIST, 0), main_row+1):
             width_available = DIST - abs(main_row - init_row)
             for init_col in range(0, width_available):              # Note we actually stop 1 before the allotted width.
-                print("Initing", init_row, init_col)
+                #print("Initing", init_row, init_col)
                 if (val := to_costs[init_row][init_col]) < math.inf:
-                    frontier.add(val + init_row + init_col)
+                    frontier.add(val - init_row + init_col)
 
                 assert abs(init_row - main_row) + abs(0 - init_col) < DIST  # TODO: Remove.
 
         for c in range(w):
 
             # Discard values which are vertically inline with c
-            for discard_row in range(max(main_row - DIST, 0), main_row+1):
-                print("removing", discard_row, c)
+            for discard_row in range(max(main_row - DIST+1, 0), main_row+1):    # We dont remove the top value because it was never added. (1-wide)
+                #print("removing", discard_row, c)
                 if (val := to_costs[discard_row][c]) < math.inf:
-                    frontier.remove(val + discard_row + c)
+                    frontier.remove(val - discard_row + c)
 
             # Add in values on the right edge of the frontier.
             for add_row in range(max(main_row - DIST, 0), main_row+1):
@@ -176,10 +183,23 @@ def sliding_window(to_costs: List[List], from_costs: List[list]):
                 if add_col >= w:
                     break
 
-                print("Adding", add_row, add_col)
+                #print("Adding", add_row, add_col)
                 assert abs(add_row - main_row) + abs(c - add_col) <= DIST
                 if (val := to_costs[add_row][add_col]) < math.inf:
-                    frontier.add(val + add_row + add_col)
+                    frontier.add(val - add_row + add_col)
+
+            # Frontier now contains all possible locations that we could reach.
+            start_manhatten_potential = c - main_row
+            start_dist = to_costs[main_row][c]
+            # start_dist + to_dist + (manhatten_dist) <= best_distance - SAVE_AMT
+            # to_dist <= best_distance - SAVE_AMT - start_dist - manhatten_dist
+            # to_dist <= best_distance - SAVE_AMT - start_dist - (dest_manhatten_potential - start_manhatten_potential)
+            # to_dist + dest_manhatten_potential <= best_distance - SAVE_AMT - start_dist + start_manhatten_potential
+            cutoff = best_distance - SAVE_AMT - start_dist + start_manhatten_potential
+            insertion_point = frontier.bisect_right(cutoff)
+            out += insertion_point
+
+    return out
 
 
 
