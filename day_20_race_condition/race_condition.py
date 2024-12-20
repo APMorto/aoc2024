@@ -1,14 +1,13 @@
 import collections
 import math
-
-from fontTools.misc.plistlib import end_dict
-
 from util.point2d import Point2D
 from util.timer import get_results
 from parser.parser import read_lines, read_line, read_grid, read_list_grid, read_line_blocks
 from typing import List
 from util.util import seek_character, seek_character_point
 from util.grid2d import Grid2DDense
+
+from sortedcontainers import SortedList
 
 def distances_from_pos(maze_grid: Grid2DDense, start_pos: Point2D):
     h, w = maze_grid.shape
@@ -122,6 +121,70 @@ def part2_inline(list_grid: List[str]):
                     num_cheats += 1
     return num_cheats
 
+
+def part2_sliding_window(list_grid: List[str]):
+    start_pos = seek_character_point(list_grid, 'S')
+    end_pos = seek_character_point(list_grid, 'E')
+    maze_grid = Grid2DDense(list_grid)
+    start_distances = distances_from_pos(maze_grid, start_pos)
+    end_distances = distances_from_pos(maze_grid, end_pos)
+    best_non_cheated = start_distances[end_pos.y][end_pos.x]
+    assert end_distances[start_pos.y][start_pos.x] == best_non_cheated
+    h, w = len(list_grid), len(list_grid[0])
+
+    out = 0
+    out += sliding_window(start_distances, end_distances)
+
+
+def sliding_window(to_costs: List[List], from_costs: List[list]):
+    h, w = len(from_costs), len(from_costs[0])
+    assert len(to_costs) == h and len(to_costs[0]) == w
+
+    SAVE_AMT = 100
+    DIST = 20
+
+    # We say the value of to_costs[r][c] = to_costs[r][c] - r + c
+    # TODO: Enforce the proper value.
+
+    # For each row, perform the sliding window, using this rows values as sources.
+    for main_row in range(h):
+        print("\n############################################ Main Row: ", main_row)
+        frontier = SortedList() # May contain duplicate values.
+
+        # Add in the initial values.
+        for init_row in range(max(main_row - DIST, 0), main_row+1):
+            width_available = DIST - abs(main_row - init_row)
+            for init_col in range(0, width_available):              # Note we actually stop 1 before the allotted width.
+                print("Initing", init_row, init_col)
+                if (val := to_costs[init_row][init_col]) < math.inf:
+                    frontier.add(val + init_row + init_col)
+
+                assert abs(init_row - main_row) + abs(0 - init_col) < DIST  # TODO: Remove.
+
+        for c in range(w):
+
+            # Discard values which are vertically inline with c
+            for discard_row in range(max(main_row - DIST, 0), main_row+1):
+                print("removing", discard_row, c)
+                if (val := to_costs[discard_row][c]) < math.inf:
+                    frontier.remove(val + discard_row + c)
+
+            # Add in values on the right edge of the frontier.
+            for add_row in range(max(main_row - DIST, 0), main_row+1):
+                width_available = DIST - abs(main_row - add_row)
+                add_col = c + width_available
+                if add_col >= w:
+                    break
+
+                print("Adding", add_row, add_col)
+                assert abs(add_row - main_row) + abs(c - add_col) <= DIST
+                if (val := to_costs[add_row][add_col]) < math.inf:
+                    frontier.add(val + add_row + add_col)
+
+
+
+
+
 # The major bottleneck in this problem reduces to the following:
 # In this manhatten-radius region, how many values are <= some value?
 # We can almost do an integral histogram type approach to count values in the region
@@ -140,6 +203,30 @@ def part2_inline(list_grid: List[str]):
 # It seems that there exists 1 and only 1 optimal path
 #
 
+#l = SortedList()
+#l.add(2)
+#l.add(2)
+#l.remove(2)
+#print(l)
+
+
+# Consider the four quadrants of our neighbors
+# We will solve for just one of those quadrants in a sliding window approach.
+# Consider that we can add in the cost of the vertical and horizontal distance of the points as we add them to the window
+# and like, we just ALWAYS DECREMENT THE DISTANCE BY 1 as we slide them left (we move right)
+# Then Supposing that we just have the set of valid, its a length check, which is trivial.
+# We can remove values when they become directly overhead
+# and add numbers on the right
+# Then if we maintain the numbers in a sorted container
+# We just query the values in the container <= some value
+
+# Crucially, we only move up and to the right
+# So manhatten distance is just he sum of row + column
+# and we just offset it by the source row + col
+
+# Can we use an integral histogram-esque approach?
+# Given how our target value keeps changing, not very well.
+
 
 if __name__ == '__main__':
     get_results("P1 Example", part1, read_grid, "example.txt")
@@ -147,4 +234,5 @@ if __name__ == '__main__':
 
     get_results("P2 Example", part2, read_grid, "example.txt")
     get_results("P2 Inline", part2_inline, read_grid, "input.txt", expected=986082)
+    get_results("P2 Sliding Window", part2_sliding_window, read_grid, "input.txt", expected=986082)
     get_results("P2", part2, read_grid, "input.txt", expected=986082)
