@@ -96,6 +96,32 @@ def part2(list_grid: List[str]):
             #    num_cheats += 1
     return num_cheats
 
+def part2_inline(list_grid: List[str]):
+    start_pos = seek_character_point(list_grid, 'S')
+    end_pos = seek_character_point(list_grid, 'E')
+    maze_grid = Grid2DDense(list_grid)
+    start_distances = distances_from_pos(maze_grid, start_pos)
+    end_distances = distances_from_pos(maze_grid, end_pos)
+    best_non_cheated = start_distances[end_pos.y][end_pos.x]
+    assert end_distances[start_pos.y][start_pos.x] == best_non_cheated
+    h, w = len(list_grid), len(list_grid[0])
+
+    num_cheats = 0
+    save_amount = 100
+    for r, c in maze_grid.row_major_indexes():
+        if list_grid[r][c] == '#': continue
+        start_cost = start_distances[r][c]
+        if start_cost > best_non_cheated - save_amount: continue    # Hopeless to even try to cheat here.
+
+        d = 20
+        for rr in range(max(0, r-20), min(h, r+20+1)):
+            abs_d_y = abs(r - rr)
+            width_available = abs(d - abs_d_y)
+            for cc in range(max(0, c-width_available), min(w, c+width_available+1)):
+                if start_cost + end_distances[rr][cc] + abs_d_y + abs(c - cc) <= best_non_cheated - save_amount:
+                    num_cheats += 1
+    return num_cheats
+
 # The major bottleneck in this problem reduces to the following:
 # In this manhatten-radius region, how many values are <= some value?
 # We can almost do an integral histogram type approach to count values in the region
@@ -120,4 +146,5 @@ if __name__ == '__main__':
     get_results("P1", part1, read_grid, "input.txt", expected=1365)
 
     get_results("P2 Example", part2, read_grid, "example.txt")
+    get_results("P2 Inline", part2_inline, read_grid, "input.txt", expected=986082)
     get_results("P2", part2, read_grid, "input.txt", expected=986082)
