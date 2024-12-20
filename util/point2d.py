@@ -37,6 +37,24 @@ class Point2D:
     def manhattan_distance(self, other: "Point2D"):
         return abs(self.x - other.x) + abs(self.y - other.y)
 
+    def adjacent_within_2_manhatten_distance(self):
+        for ro, co in (       (-2, 0),
+                    (-1, -1), (-1, 0), (-1, 1),
+           (0, -2), (0, -1),           (0, 1),  (0, 2),
+                    (1, -1),  (1, 0),  (1, 1),
+                              (2, 0)):
+            yield Point2D(self.x + co, self.y + ro)
+
+    def adjacent_within_3_manhatten_distance(self):
+        for ro, co in (               (-3, 0),
+                            (-2, -1),  (-2, 0), (-2, 1),
+                 (-1, -2),  (-1, -1), (-1, 0), (-1, 1), (-1, 2),
+        (0, -3), (0, -2),   (0, -1),           (0, 1),  (0, 2),  (0, 3),
+                 (1, -2),   (1, -1),  (1, 0),  (1, 1),  (1, 2),
+                            (2, -1),  (2, 0),  (2, 1),
+                                      (3, 0)):
+            yield Point2D(self.x + co, self.y + ro)
+
     def __add__(self, other):
         return Point2D(self.x + other.x, self.y + other.y)
 

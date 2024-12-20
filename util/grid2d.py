@@ -38,6 +38,8 @@ class Grid2DDense:
             line[ro+1 : right+1] = [fill] * (-offset)
         print("line post offset  ", line)
 
+    def in_bounds(self, point: Point2D) -> bool:
+        return 0 <= point.y < self.h and 0 <= point.x < self.w
 
     def __getitem__(self, item):
         return self.grid[item]
@@ -50,6 +52,7 @@ class Grid2DDense:
         return (Point2D(r, c) for r in range(self.h) for c in range(self.w))
 
     def pos_iter(self):
+        raise NotImplemented
         return (Point2D(c, r) for r in range(self.h) for c in range(self.w) )
 
     def __len__(self):
