@@ -107,6 +107,12 @@ def part2(list_grid: List[str]):
 
 # The crux of this problem is reducing the amount of possible cheats that we check.
 
+# Promising.
+# https://www.reddit.com/r/adventofcode/comments/1hicdtb/comment/m2y6zvg/?utm_source=share&utm_medium=web3x&utm_name=web3xcss&utm_term=1&utm_content=share_button
+# https://github.com/bharadwaj-raju/aoc-2024/blob/main/day20/2.py
+
+# It seems that there exists 1 and only 1 optimal path
+#
 
 
 if __name__ == '__main__':
