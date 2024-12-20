@@ -12,8 +12,6 @@ def part1(lines: List[str]):
     # lines[0] = size (0 - that)
     # Once something is corrupted, you cant go there.
     l = int(lines[0]) + 1
-    #arr = np.zeros((l, l), dtype=bool)
-    #arr[0, 0] = True
 
     available = np.ones((l, l), dtype=bool)
     for i in range(1, min(len(lines), 1024+1)):
@@ -26,7 +24,6 @@ def part1(lines: List[str]):
     seen = {(0, 0)}
     while q:
         cost, r, c = q.popleft()
-        #print(cost, r, c)
         for rr, cc in ((r-1, c), (r+1, c), (r, c-1), (r, c+1)):
             if 0 <= rr < l and 0 <= cc < l and available[rr, cc] and (rr, cc) not in seen:
                 if rr == l-1 and cc == l-1:
@@ -36,11 +33,8 @@ def part1(lines: List[str]):
 
     return -1
 
-
-
-
-
 def part2(lines: List[str]):
+    # lines[0] = size (0 - that)
     l = int(lines[0]) + 1
     available = np.ones((l, l), dtype=bool)
     for i in range(1, len(lines)):
@@ -58,14 +52,17 @@ def part2(lines: List[str]):
                     if 0 <= rr < l and 0 <= cc < l and available[rr, cc]:
                         dsu.join(r*l+c, rr*l+cc)
 
-
-
+    # Lines in reverse.
     for i in range(len(lines)-1, 0, -1):
         r, c = map(int, lines[i].split(','))
+
+        # Reconnect this tile.
         available[r, c] = True
         for rr, cc in ((r - 1, c), (r + 1, c), (r, c - 1), (r, c + 1)):
             if 0 <= rr < l and 0 <= cc < l and available[rr, cc]:
                 dsu.join(r * l + c, rr * l + cc)
+
+        # If we can now reach, then this is the first tile that would have blocked it off.
         if dsu.connected(0, l*l-1):
             return f"{r},{c}"
     return "No Solution Found."
