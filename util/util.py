@@ -19,4 +19,4 @@ def seek_character_point(grid: List[str], c: str):
     return Point2D(*reversed(seek_character(grid, c)))
 
 def rotate_matrix(matrix):
-    return list(zip(*(r for r in matrix[::-1])))
+    return tuple(zip(*(r for r in matrix[::-1])))
