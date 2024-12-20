@@ -68,12 +68,38 @@ def part1(list_grid: List[str]):
 
 
 
-def part2(_):
-    pass
+def part2(list_grid: List[str]):
+    start_pos = seek_character_point(list_grid, 'S')
+    end_pos =   seek_character_point(list_grid, 'E')
+    maze_grid = Grid2DDense(list_grid)
+
+    start_distances = distances_from_pos(maze_grid, start_pos)
+    end_distances = distances_from_pos(maze_grid, end_pos)
+
+    best_non_cheated = start_distances[end_pos.y][end_pos.x]
+    print("Best non cheated:", best_non_cheated)
+    assert end_distances[start_pos.y][start_pos.x] == best_non_cheated
+
+    num_cheats = 0
+    save_amount = 100
+    for pos in maze_grid.row_major_points():
+        if maze_grid.get(pos) == '#':
+            continue
+        start_cost = start_distances[pos.y][pos.x]
+        assert start_cost + end_distances[pos.y][pos.x] >= best_non_cheated
+
+        for adj in pos.points_within_manhatten_distance(20):
+            if maze_grid.in_bounds(adj) and start_cost + end_distances[adj.y][adj.x] + pos.manhattan_distance(adj) <= best_non_cheated - save_amount:
+                num_cheats += 1
+            #if maze_grid.in_bounds(adj) and start_cost + end_distances[adj.y][adj.x] + pos.manhattan_distance(adj) == best_non_cheated - 76:
+            #    num_cheats += 1
+    return num_cheats
 
 # not 31
 # 1668 too high.
 # 992 too low
+
+# 1_221_086 too high.
 
 if __name__ == '__main__':
     get_results("P1 Example", part1, read_list_grid, "example.txt")

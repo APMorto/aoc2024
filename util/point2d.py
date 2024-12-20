@@ -55,6 +55,12 @@ class Point2D:
                                       (3, 0)):
             yield Point2D(self.x + co, self.y + ro)
 
+    def points_within_manhatten_distance(self, dist: int):
+        for y in range(self.y - dist, self.y + dist + 1):
+            width = abs(dist - abs(self.y - y))
+            for x in range(self.x - width, self.x + width + 1):
+                yield Point2D(x, y)
+
     def __add__(self, other):
         return Point2D(self.x + other.x, self.y + other.y)
 
