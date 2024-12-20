@@ -81,8 +81,14 @@ def part2(list_grid: List[str]):
         if maze_grid.get(pos) == '#':
             continue
         start_cost = start_distances[pos.y][pos.x]
+
+        # Hopeless to even try to cheat here.
+        if start_cost > best_non_cheated - save_amount:
+            continue
         #assert start_cost + end_distances[pos.y][pos.x] >= best_non_cheated
 
+        # You may choose to only look in this manhatten radius.
+        #distance_possible_to_cheat = min(20, best_non_cheated - start_cost - save_amount)
         for adj in pos.points_within_manhatten_distance(20):
             if maze_grid.in_bounds(adj) and start_cost + end_distances[adj.y][adj.x] + pos.manhattan_distance(adj) <= best_non_cheated - save_amount:
                 num_cheats += 1
@@ -92,6 +98,15 @@ def part2(list_grid: List[str]):
 
 # The major bottleneck in this problem reduces to the following:
 # In this manhatten-radius region, how many values are <= some value?
+# We can almost do an integral histogram type approach to count values in the region
+# and then just only have sufficiently low cost to end paths in that thing
+# But then we also have to consider the manhatten distance to that point
+# So its not clear how you would do this
+# One possible approach is to just use a spatial grid where we store the costs and positions of each end path in a sorted list
+# Then we just check all path costs <= some threshold for completeness, of course filtering for cheat path cost and manhatten distance
+
+# The crux of this problem is reducing the amount of possible cheats that we check.
+
 
 
 if __name__ == '__main__':
