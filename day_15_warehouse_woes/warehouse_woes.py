@@ -1,6 +1,3 @@
-from six import moves
-
-from util.point2d import Point2D
 from util.timer import get_results
 from parser.parser import read_lines, read_line, read_grid, read_list_grid, read_line_blocks
 from typing import List

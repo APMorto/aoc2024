@@ -3,7 +3,6 @@ from collections import defaultdict
 from functools import reduce
 from itertools import chain
 from typing import List
-import matplotlib.pyplot as plt
 
 from parser.parser import read_lines
 from util.timer import get_results
@@ -46,6 +45,7 @@ def part1(lines: List[str]):
 
 
 def part2(lines: List[str]):
+    import matplotlib.pyplot as plt
     w = int(lines[0][2:])
     h = int(lines[1][2:])
     half_w = w // 2 if w % 2 == 1 else None

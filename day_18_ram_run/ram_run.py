@@ -74,3 +74,6 @@ if __name__ == '__main__':
 
     get_results("P2 Example", part2, read_lines, "example.txt", expected="6,1")
     get_results("P2", part2, read_lines, "input.txt")
+
+    # https://www.reddit.com/r/adventofcode/comments/1hgy6nb/comment/m2mwo0d/?utm_source=share&utm_medium=web3x&utm_name=web3xcss&utm_term=1&utm_content=share_button
+    get_results("Custom 213x2132", part2, read_lines, "biginput.txt")
