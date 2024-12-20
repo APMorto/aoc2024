@@ -22,6 +22,7 @@ import day_16_reindeer_maze.reindeer_maze       as day_16
 
 import day_18_ram_run.ram_run                   as day_18
 import day_19_linen_layout.linen_layout         as day_19
+import day_20_race_condition.race_condition     as day_20
 
 day_information = {
 # DAY: (p1, p2, input_fn, [input_fn2], "dir")
@@ -44,6 +45,7 @@ day_information = {
 
     18: (day_18.part1,  day_18.part2,       read_lines,          "day_18_ram_run"),
     19: (day_19.part1,  day_19.part2,       read_line_blocks,    "day_19_linen_layout"),
+    20: (day_20.part1,  day_20.part2,       read_grid,           "day_20_race_condition"),
 
 }
 

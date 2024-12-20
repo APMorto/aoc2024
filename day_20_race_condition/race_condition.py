@@ -45,7 +45,7 @@ def part1(list_grid: List[str]):
     end_distances = distances_from_pos(maze_grid, end_pos)
 
     best_non_cheated = start_distances[end_pos.y][end_pos.x]
-    print("Best non cheated:", best_non_cheated)
+    #print("Best non cheated:", best_non_cheated)
     assert end_distances[start_pos.y][start_pos.x] == best_non_cheated
 
     num_cheats = 0
@@ -54,7 +54,7 @@ def part1(list_grid: List[str]):
         if maze_grid.get(pos) == '#':
             continue
         start_cost = start_distances[pos.y][pos.x]
-        assert start_cost + end_distances[pos.y][pos.x] >= best_non_cheated
+        #assert start_cost + end_distances[pos.y][pos.x] >= best_non_cheated
 
         for adj in pos.adjacent_within_2_manhatten_distance():
             if maze_grid.in_bounds(adj) and start_cost + end_distances[adj.y][adj.x] + pos.manhattan_distance(adj) <= best_non_cheated - save_amount:
@@ -62,11 +62,6 @@ def part1(list_grid: List[str]):
             #if maze_grid.in_bounds(adj) and start_cost + end_distances[adj.y][adj.x] + pos.manhattan_distance(adj) == best_non_cheated - 64:
             #    num_cheats += 1
     return num_cheats
-
-
-
-
-
 
 def part2(list_grid: List[str]):
     start_pos = seek_character_point(list_grid, 'S')
@@ -77,7 +72,7 @@ def part2(list_grid: List[str]):
     end_distances = distances_from_pos(maze_grid, end_pos)
 
     best_non_cheated = start_distances[end_pos.y][end_pos.x]
-    print("Best non cheated:", best_non_cheated)
+    #print("Best non cheated:", best_non_cheated)
     assert end_distances[start_pos.y][start_pos.x] == best_non_cheated
 
     num_cheats = 0
@@ -86,7 +81,7 @@ def part2(list_grid: List[str]):
         if maze_grid.get(pos) == '#':
             continue
         start_cost = start_distances[pos.y][pos.x]
-        assert start_cost + end_distances[pos.y][pos.x] >= best_non_cheated
+        #assert start_cost + end_distances[pos.y][pos.x] >= best_non_cheated
 
         for adj in pos.points_within_manhatten_distance(20):
             if maze_grid.in_bounds(adj) and start_cost + end_distances[adj.y][adj.x] + pos.manhattan_distance(adj) <= best_non_cheated - save_amount:
@@ -95,15 +90,13 @@ def part2(list_grid: List[str]):
             #    num_cheats += 1
     return num_cheats
 
-# not 31
-# 1668 too high.
-# 992 too low
+# The major bottleneck in this problem reduces to the following:
+# In this manhatten-radius region, how many values are <= some value?
 
-# 1_221_086 too high.
 
 if __name__ == '__main__':
-    get_results("P1 Example", part1, read_list_grid, "example.txt")
-    get_results("P1", part1, read_list_grid, "input.txt")
+    get_results("P1 Example", part1, read_grid, "example.txt")
+    get_results("P1", part1, read_grid, "input.txt", expected=1365)
 
-    get_results("P2 Example", part2, read_list_grid, "example.txt")
-    get_results("P2", part2, read_list_grid, "input.txt")
+    get_results("P2 Example", part2, read_grid, "example.txt")
+    get_results("P2", part2, read_grid, "input.txt", expected=986082)
