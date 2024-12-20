@@ -1,13 +1,10 @@
 import collections
 import math
-
-import numpy as np
-
 from util.point2d import Point2D
 from util.timer import get_results
-from parser.parser import read_lines, read_line, read_grid, read_list_grid, read_line_blocks
+from parser.parser import read_grid
 from typing import List
-from util.util import seek_character, seek_character_point, rotate_matrix
+from util.util import seek_character_point, rotate_matrix
 from util.grid2d import Grid2DDense
 
 from sortedcontainers import SortedList
@@ -26,8 +23,6 @@ def distances_from_pos(maze_grid: Grid2DDense, start_pos: Point2D):
                 distances[adj.y][adj.x] = d+1
                 q.append((adj, d + 1))
     return distances
-
-
 
 def part1(list_grid: List[str]):
     start_pos = seek_character_point(list_grid, 'S')
@@ -74,7 +69,6 @@ def part2(list_grid: List[str]):
     end_distances = distances_from_pos(maze_grid, end_pos)
 
     best_non_cheated = start_distances[end_pos.y][end_pos.x]
-    #print("Best non cheated:", best_non_cheated)
     assert end_distances[start_pos.y][start_pos.x] == best_non_cheated
 
     num_cheats = 0
@@ -126,10 +120,12 @@ def part2_inline(list_grid: List[str]):
 
 
 def part2_sliding_window(list_grid: List[str]):
+    # Read grid information.
     start_pos = seek_character_point(list_grid, 'S')
     end_pos = seek_character_point(list_grid, 'E')
     maze_grid = Grid2DDense(list_grid)
 
+    # BFS from start and end.
     start_distances = distances_from_pos(maze_grid, start_pos)
     end_distances = distances_from_pos(maze_grid, end_pos)
 
@@ -139,13 +135,18 @@ def part2_sliding_window(list_grid: List[str]):
     out = 0
     out += sliding_window(start_distances, end_distances, best_non_cheated)
     for _ in range(3):
+        # Rather than implementing the algorithm in multiple directions, we just rotate the arrays. Takes not that much time.
         start_distances = rotate_matrix(start_distances)
         end_distances = rotate_matrix(end_distances)
+
+        # The main part of the algorithm. Takes ~0.5s of the total ~0.69s
         out += sliding_window(start_distances, end_distances, best_non_cheated)
 
     return out
 
 
+# Looks at how many ways we can skip, only travelling up and to the right.
+# But never straight up. (This way it does not overlap with going straight right in a rotated context.)
 def sliding_window(to_costs: List[List], from_costs: List[list], best_distance: int):
     h, w = len(from_costs), len(from_costs[0])
     assert len(to_costs) == h and len(to_costs[0]) == w
@@ -162,7 +163,7 @@ def sliding_window(to_costs: List[List], from_costs: List[list], best_distance: 
 
         # Add in the initial values.
         for init_row in range(max(main_row - DIST, 0), main_row+1):
-            width_available = DIST - abs(main_row - init_row)
+            width_available = DIST - main_row + init_row            # main row >= init row. No abs() needed.
             for init_col in range(0, width_available):              # Note we actually stop 1 before the allotted width.
                 if (val := to_costs[init_row][init_col]) < math.inf:
                     frontier.add(val - init_row + init_col)
@@ -196,9 +197,10 @@ def sliding_window(to_costs: List[List], from_costs: List[list], best_distance: 
                 # to_dist <= best_distance - SAVE_AMT - start_dist - (dest_manhatten_potential - start_manhatten_potential)
                 # to_dist + dest_manhatten_potential <= best_distance - SAVE_AMT - start_dist + start_manhatten_potential
                 cutoff = best_distance - SAVE_AMT - start_dist + start_manhatten_potential
+
+                # Obtain the index of the list such that all indices with values <= cutoff are smaller.
                 insertion_point = frontier.bisect_right(cutoff)
                 out += insertion_point
-
         #assert len(frontier) == 0, frontier
 
     return out
@@ -224,11 +226,6 @@ def sliding_window(to_costs: List[List], from_costs: List[list], best_distance: 
 # It seems that there exists 1 and only 1 optimal path
 #
 
-#l = SortedList()
-#l.add(2)
-#l.add(2)
-#l.remove(2)
-#print(l)
 
 
 # Consider the four quadrants of our neighbors
