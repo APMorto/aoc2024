@@ -94,6 +94,10 @@ class ChronospatialComputer:
     def __repr__(self):
         return f"A: {self.A}, B: {self.B}, C: {self.C}, IP: {self.IP}, OUT: {self.output_list}"
 
+    def get_output(self):
+        self.run_to_halting()
+        return self.output_list
+
 
 def initialalize_computer(line_blocks):
     registers, program_string = line_blocks
@@ -110,39 +114,48 @@ def part1(line_blocks):
     return ",".join(map(str, computer.output_list))
 
 
+def check(args):
+    program, A, B, C = args
+    computer = ChronospatialComputer(program, A, B, C)
+
+    while computer.valid:
+        if computer.execute():
+            assert computer.halted
+            break
+    if computer.valid and len(computer.output_list) == len(program):
+        return A
+        print("#############################################")
+        print("Found result")
+        print(A)
+
+    return 0
+
+
+
+
 def part2(line_blocks):
     registers, program_string = line_blocks
     A = int(registers[0][len("Register _: "):])
     B = int(registers[1][len("Register _: "):])
     C = int(registers[2][len("Register _: "):])
     program = list(map(int, program_string[0][len("Program: "):].split(",")))
+    target = program[::-1]
 
-    seen_states = set()
+    def run(a):
+        computer = ChronospatialComputer(program, a, B, C)
+        return computer.get_output()
 
-    # For what value of A will this computer output itself?
-    for A in range(0, 1 << 32):
-        if A & 1 << 30:
-            print("Iteration:", A)
+    def find_a(a, depth):
+        if depth == len(target):
+            return a
+        for i in range(8):
+            output = run(a*8+i)
+            if len(output) > 0 and output[0] == target[depth]:
+                if result := find_a(a * 8 + i, depth + 1):
+                    return result
+        return 0
 
-        computer = ChronospatialComputer(program, A, B, C)
-        computer.expect(program)
-
-        while computer.valid:
-            if computer.execute():
-                assert computer.halted
-                break
-            state = computer.state()
-            if state in seen_states:
-                break
-            seen_states.add(state)
-        if computer.valid and len(computer.output_list) == len(program):
-            return A
-
-    return None
-
-
-
-# not 2,3,1,2,4,3,5,2,2
+    return find_a(0, 0)
 
 
 if __name__ == '__main__':
@@ -150,4 +163,4 @@ if __name__ == '__main__':
     get_results("P1", part1, read_line_blocks, "input.txt")
 
     get_results("P2 Example", part2, read_line_blocks, "example2.txt", expected=117440)
-    get_results("P2", part2, read_line_blocks, "input.txt")
+    get_results("P2", part2, read_line_blocks, "input.txt", expected=258394985014171)
