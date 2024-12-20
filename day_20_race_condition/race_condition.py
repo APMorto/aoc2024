@@ -9,6 +9,101 @@ from util.grid2d import Grid2DDense
 
 from sortedcontainers import SortedList
 
+def part2_sliding_window(list_grid: List[str]):
+    # Read grid information.
+    start_pos = seek_character_point(list_grid, 'S')
+    end_pos = seek_character_point(list_grid, 'E')
+    maze_grid = Grid2DDense(list_grid)
+
+    # BFS from start and end.
+    start_distances = distances_from_pos(maze_grid, start_pos)
+    end_distances = distances_from_pos(maze_grid, end_pos)
+
+    best_non_cheated = start_distances[end_pos.y][end_pos.x]
+    assert end_distances[start_pos.y][start_pos.x] == best_non_cheated
+
+    out = 0
+    out += sliding_window(start_distances, end_distances, best_non_cheated)
+    for _ in range(3):
+        # Rather than implementing the algorithm in multiple directions, we just rotate the arrays. Takes not that much time.
+        start_distances = rotate_matrix(start_distances)
+        end_distances = rotate_matrix(end_distances)
+
+        # The main part of the algorithm. Takes ~0.5s of the total ~0.69s
+        out += sliding_window(start_distances, end_distances, best_non_cheated)
+
+    return out
+
+
+# Looks at how many ways we can skip, only travelling up and to the right.
+# But never straight up. (This way it does not overlap with going straight right in a rotated context.)
+def sliding_window(to_costs: List[List], from_costs: List[list], best_distance: int):
+    h, w = len(from_costs), len(from_costs[0])
+    assert len(to_costs) == h and len(to_costs[0]) == w
+
+    out = 0
+    SAVE_AMT = 100
+    DIST = 20
+
+    # We say the value of to_costs[r][c] = to_costs[r][c] - r + c
+    # Given we only travel up and to the right, we assign each position a 'manhatten potential', given by col - row
+    # This increases as it goes up and to the right.
+    # => Dist(a, b) = A's_manhatten_potential - B's_manhatten_potential if A is to the top right of B
+    # This is valuable so that we can have sort of a variable distance threshold in our frontier as we move right.
+    # We need only update the value we query, but not update the values in the frontier.
+
+    # For each row, perform the sliding window, using this rows values as sources.
+    for main_row in range(h):
+        frontier = SortedList()     # May contain duplicate values.
+        # Must be able to: Add values, Remove values, and query how many values are <= x
+        # This does that, though others may do it better. This isn't that fast of an implementation in my experience.
+
+        # Add in the initial values.
+        for init_row in range(max(main_row - DIST, 0), main_row+1):
+            width_available = DIST - main_row + init_row            # main row >= init row. No abs() needed.
+            for init_col in range(0, width_available):              # Note we actually stop 1 before the allotted width.
+                if (val := to_costs[init_row][init_col]) < math.inf:
+                    frontier.add(val - init_row + init_col)
+                #assert abs(init_row - main_row) + abs(0 - init_col) < DIST
+
+        for c in range(w):
+
+            # Discard values which are vertically inline with c
+            for discard_row in range(max(main_row - DIST+1, 0), main_row+1):    # We dont remove the top value because it was never added. (1-wide)
+                if (val := to_costs[discard_row][c]) < math.inf:
+                    frontier.remove(val - discard_row + c)
+
+            # Add in values on the right edge of the frontier.
+            for add_row in range(max(main_row - DIST+1, 0), main_row+1):    # Dont add the top because we dont need to.
+                width_available = DIST - main_row + add_row                 # add_row <= main_row, so no abs needed.
+                add_col = c + width_available
+                if add_col >= w:
+                    break
+
+                #assert abs(add_row - main_row) + abs(c - add_col) <= DIST
+                if (val := to_costs[add_row][add_col]) < math.inf:
+                    frontier.add(val - add_row + add_col)
+
+            start_dist = from_costs[main_row][c]
+            if start_dist < math.inf:
+                # Frontier now contains all possible locations that we could reach.
+                start_manhatten_potential = c - main_row
+
+                # The condition for a valid cheat is given by:
+                # start_dist + to_dist + (manhatten_dist) <= best_distance - SAVE_AMT
+                # to_dist <= best_distance - SAVE_AMT - start_dist - manhatten_dist
+                # to_dist <= best_distance - SAVE_AMT - start_dist - (dest_manhatten_potential - start_manhatten_potential)
+                # to_dist + dest_manhatten_potential <= best_distance - SAVE_AMT - start_dist + start_manhatten_potential
+                cutoff = best_distance - SAVE_AMT - start_dist + start_manhatten_potential
+
+                # Obtain the index of the list such that all indices with values <= cutoff are smaller.
+                insertion_point = frontier.bisect_right(cutoff)
+                out += insertion_point
+        #assert len(frontier) == 0, frontier
+
+    return out
+
+# Standard BFS. Unreachable positions are denoted by math.inf
 def distances_from_pos(maze_grid: Grid2DDense, start_pos: Point2D):
     h, w = maze_grid.shape
     distances  = [[math.inf] * w for _ in range(h)]
@@ -117,96 +212,6 @@ def part2_inline(list_grid: List[str]):
                 if start_cost + end_distances[rr][cc] + abs_d_y + abs(c - cc) <= best_non_cheated - save_amount:
                     num_cheats += 1
     return num_cheats
-
-
-def part2_sliding_window(list_grid: List[str]):
-    # Read grid information.
-    start_pos = seek_character_point(list_grid, 'S')
-    end_pos = seek_character_point(list_grid, 'E')
-    maze_grid = Grid2DDense(list_grid)
-
-    # BFS from start and end.
-    start_distances = distances_from_pos(maze_grid, start_pos)
-    end_distances = distances_from_pos(maze_grid, end_pos)
-
-    best_non_cheated = start_distances[end_pos.y][end_pos.x]
-    assert end_distances[start_pos.y][start_pos.x] == best_non_cheated
-
-    out = 0
-    out += sliding_window(start_distances, end_distances, best_non_cheated)
-    for _ in range(3):
-        # Rather than implementing the algorithm in multiple directions, we just rotate the arrays. Takes not that much time.
-        start_distances = rotate_matrix(start_distances)
-        end_distances = rotate_matrix(end_distances)
-
-        # The main part of the algorithm. Takes ~0.5s of the total ~0.69s
-        out += sliding_window(start_distances, end_distances, best_non_cheated)
-
-    return out
-
-
-# Looks at how many ways we can skip, only travelling up and to the right.
-# But never straight up. (This way it does not overlap with going straight right in a rotated context.)
-def sliding_window(to_costs: List[List], from_costs: List[list], best_distance: int):
-    h, w = len(from_costs), len(from_costs[0])
-    assert len(to_costs) == h and len(to_costs[0]) == w
-
-    out = 0
-    SAVE_AMT = 100
-    DIST = 20
-
-    # We say the value of to_costs[r][c] = to_costs[r][c] - r + c
-
-    # For each row, perform the sliding window, using this rows values as sources.
-    for main_row in range(h):
-        frontier = SortedList() # May contain duplicate values.
-
-        # Add in the initial values.
-        for init_row in range(max(main_row - DIST, 0), main_row+1):
-            width_available = DIST - main_row + init_row            # main row >= init row. No abs() needed.
-            for init_col in range(0, width_available):              # Note we actually stop 1 before the allotted width.
-                if (val := to_costs[init_row][init_col]) < math.inf:
-                    frontier.add(val - init_row + init_col)
-                #assert abs(init_row - main_row) + abs(0 - init_col) < DIST
-
-        for c in range(w):
-
-            # Discard values which are vertically inline with c
-            for discard_row in range(max(main_row - DIST+1, 0), main_row+1):    # We dont remove the top value because it was never added. (1-wide)
-                if (val := to_costs[discard_row][c]) < math.inf:
-                    frontier.remove(val - discard_row + c)
-
-            # Add in values on the right edge of the frontier.
-            for add_row in range(max(main_row - DIST+1, 0), main_row+1):    # Dont add the top because we dont need to.
-                width_available = DIST - main_row + add_row                 # add_row <= main_row, so no abs needed.
-                add_col = c + width_available
-                if add_col >= w:
-                    break
-
-                #assert abs(add_row - main_row) + abs(c - add_col) <= DIST
-                if (val := to_costs[add_row][add_col]) < math.inf:
-                    frontier.add(val - add_row + add_col)
-
-            start_dist = from_costs[main_row][c]
-            if start_dist < math.inf:
-                # Frontier now contains all possible locations that we could reach.
-                start_manhatten_potential = c - main_row
-
-                # start_dist + to_dist + (manhatten_dist) <= best_distance - SAVE_AMT
-                # to_dist <= best_distance - SAVE_AMT - start_dist - manhatten_dist
-                # to_dist <= best_distance - SAVE_AMT - start_dist - (dest_manhatten_potential - start_manhatten_potential)
-                # to_dist + dest_manhatten_potential <= best_distance - SAVE_AMT - start_dist + start_manhatten_potential
-                cutoff = best_distance - SAVE_AMT - start_dist + start_manhatten_potential
-
-                # Obtain the index of the list such that all indices with values <= cutoff are smaller.
-                insertion_point = frontier.bisect_right(cutoff)
-                out += insertion_point
-        #assert len(frontier) == 0, frontier
-
-    return out
-
-
-
 
 # The major bottleneck in this problem reduces to the following:
 # In this manhatten-radius region, how many values are <= some value?
