@@ -20,6 +20,8 @@ import day_14_restroom_redoubt.restroom_redoubt as day_14
 import day_15_warehouse_woes.warehouse_woes     as day_15
 import day_16_reindeer_maze.reindeer_maze       as day_16
 
+import day_19_linen_layout.linen_layout         as day_19
+
 day_information = {
 # DAY: (p1, p2, input_fn, [input_fn2], "dir")
     1: (day_01.part1,   day_01.part2,       read_lines,         "day_01_historian_hysteria"),
@@ -38,6 +40,8 @@ day_information = {
     14: (day_14.part1,  None,               read_lines,         "day_14_restroom_redoubt"),
     15: (day_15.part1,  day_15.part2,       read_line_blocks,   "day_15_warehouse_woes"),
     16: (day_16.part1,  day_16.part2,       read_grid,          "day_16_reindeer_maze"),
+
+    19: (day_19.part1,  day_19.part2,       read_line_blocks,          "day_19_linen_layout"),
 
 }
 

@@ -10,7 +10,7 @@ from util.grid2d import Grid2DDense
 from util.directions import Direction2DCR
 from util.datastructures import MutableMinHeap
 
-from marco_del_mastro_solution import part1_marco_del_maestro
+from day_16_reindeer_maze.marco_del_mastro_solution import part1_marco_del_maestro
 
 # A* for this is like, BARELY any better.
 def part1(grid_list):

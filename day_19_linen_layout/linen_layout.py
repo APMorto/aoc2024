@@ -42,7 +42,6 @@ def num_ways_to_make(pattern, pattern_set, lengths):
     return dp[n]
 
 
-
 def part2(blocks):
     pattern_set = set(blocks[0][0].split(", "))
     pattern_lengths = sorted(set(len(p) for p in pattern_set))
