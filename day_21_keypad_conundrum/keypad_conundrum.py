@@ -1,4 +1,5 @@
 import collections
+from itertools import chain
 
 from util.timer import get_results
 from parser.parser import read_lines, read_line, read_grid, read_list_grid, read_line_blocks
@@ -20,11 +21,6 @@ pad_grid(directional_keypad, None)
 pad_grid(numeric_keypad, None)
 init_dir_rc = seek_character(directional_keypad, 'A')
 init_num_rc = seek_character(numeric_keypad, 'A')
-
-
-
-
-
 
 def result_keypad(action, r, c, keypad) -> Tuple[Optional[tuple], Optional[str]]:
     match action:
@@ -80,7 +76,6 @@ def neighbors_p1(state_tuple, code):
 
         yield dr1_, dc1_, dr2_, dc2_, nr1_, nc1_, amt_typed_
 
-
 def min_presses_for_code_p1(code):
     initial_state = (*init_dir_rc, *init_dir_rc, *init_num_rc, 0)
     seen = {initial_state}
@@ -98,7 +93,6 @@ def min_presses_for_code_p1(code):
 
     return None
 
-
 def part1(lines):
     out = 0
     for code in lines:
@@ -107,10 +101,9 @@ def part1(lines):
             print("Couldnt solve code", code)
 
         numeric_part = int(code[:-1])
+        print(code, min_presses)
         out += numeric_part * min_presses
     return out
-
-
 
 def neighbors_p2(state, code):
     *directional_positions, num_position, amt_typed = state
@@ -146,6 +139,7 @@ def neighbors_p2(state, code):
                 continue
 
             if key_action is not None:
+                print("Typed action", key_action)
                 if code[amt_typed] != key_action:
                     continue
                 amt_ += 1
@@ -153,7 +147,6 @@ def neighbors_p2(state, code):
         # Was valid. Yield state.
         new_dir_positions = (*diff_position_stack, *directional_positions[len(diff_position_stack):])
         yield (*new_dir_positions, key_pos, amt_)
-
 
 def min_presses_for_code_p2(code):
     initial_state = (*[init_dir_rc]*25, init_num_rc, 0)
@@ -172,8 +165,7 @@ def min_presses_for_code_p2(code):
 
     return None
 
-
-def part2(lines):
+def part2_bf(lines):
     out = 0
     for code in lines:
         min_presses = min_presses_for_code_p2(code)
@@ -183,6 +175,86 @@ def part2(lines):
         numeric_part = int(code[:-1])
         out += numeric_part * min_presses
     return out
+
+# paths map will be a dictionary of (key1, key) -> set of paths to get us there
+
+# https://www.reddit.com/r/adventofcode/comments/1hj2odw/comment/m35t63r/?utm_source=share&utm_medium=web3x&utm_name=web3xcss&utm_term=1&utm_content=share_button
+# Similar approach to hrunt
+def get_paths_map(keypad: List[List[Optional[str]]], buttons):
+    paths_map = {}
+    for a in buttons:
+        r1, c1 = seek_character(keypad, a)
+        for b in buttons:
+            r2, c2 = seek_character(keypad, b)
+
+            dr, dc = r2 - r1, c2 - c1
+
+            x_moves = ('<' if dc < 0 else '>') * abs(dc)
+            y_moves = ('^' if dr < 0 else 'v') * abs(dr)
+
+            if dr == 0: # Horizontal
+                paths_map[a, b] = [x_moves]
+            elif dc == 0:   # Vertical
+                paths_map[a, b] = [y_moves]
+            elif keypad[r1][c2] is None:    # Initially moving horizontally would shove us off the map
+                paths_map[a, b] = [y_moves + x_moves]
+            elif keypad[r2][c1] is None:    # Initially moving vertically would put os off the map
+                paths_map[a, b] = [x_moves + y_moves]
+            else:                                       # We may move V, H or H, V
+                paths_map[a, b] = [x_moves + y_moves, y_moves + x_moves]
+    return paths_map
+
+def min_presses_p2(code, number_paths_map, action_costs):
+    return sum(
+        min(
+            sum(action_costs[c] for c in path) + 1 for path in number_paths_map[a, b]
+        ) for a, b in zip('A' + code, code) # A -> num1 -> num2 ...
+    )
+
+def part2(lines):
+    paths_map = get_paths_map(directional_keypad, ACTIONS)
+
+    #print(paths_map)
+    action_costs = {'>': 1, 'v': 1, '<': 1, '^': 1, 'A': 1}
+    for i in range(2):
+        new_action_costs = {}
+
+        for action in ACTIONS:
+            new_action_costs[action] = min(
+                sum(action_costs[c] for c in chain(path_to, path_from))
+                for path_to in paths_map['A', action] for path_from in paths_map[action, 'A']
+            ) + 1
+
+        action_costs = new_action_costs
+
+        print(i)
+        print(new_action_costs)
+
+    number_paths_map = get_paths_map(numeric_keypad, "0123456789A")
+    print(number_paths_map)
+
+    out = 0
+    for code in lines:
+        min_presses = min_presses_p2(code, number_paths_map, action_costs)
+        print(code, min_presses)
+        if min_presses is None:
+            print("Couldnt solve code", code)
+
+        numeric_part = int(code[:-1])
+        out += numeric_part * min_presses
+
+    return out
+
+
+
+
+
+# 1886805172819310742
+# too high.
+
+
+
+
 
 
 # we move from r1, rc -> r2, c2
@@ -217,6 +289,50 @@ def part2(lines):
 # Giving us 1000 states (still utterly trivial)
 
 
+# Part 2:
+
+# So, we sometimes end up with a stack of A presses.
+# Because to press a on layer i, all layers 1, 2, ..., i-1 must be on A
+
+# So, we always start on A stacks
+# and after each button press, we are still on an A-stack
+
+# Control goes from top to bottom
+# But we know what we need from bottom to top
+
+# The A-Stack is assembled from bottom to top.
+# To make i press A, i-1 must be not on A
+# so i-1 must be moved, then have A pressed
+# But for i-1 to move A, [0 .. i-2] must be an A-stack
+# Since we must press i-1
+
+# At some point, we will have A on all but one element
+# say its i not on A
+# Then i-1 must be not on A
+
+
+# Lets look at how can move some element i
+#
+
+# At the bottom layer, we want to know the fastest way to perform some action.
+# Say, starting at A, we go to the button, then press A
+# So the bottom layer is just A -> button -> A
+# necessarily
+# If the action is pressing A, the cost is 1
+# Since A -> just press A stack -> hey youre on A again
+
+# Consider moving left
+#  A-stack -> position on left ->
+#
+
+# The human state:
+# Layer below can move left, right, up, down, and press for a cost of 1
+#
+
+# The cost of an A button shall always be one
+
+
+# We want to know the cost of moving between states?
 
 
 
@@ -225,5 +341,5 @@ if __name__ == '__main__':
     get_results("P1 Example", part1, read_lines, "example.txt", expected=126384)
     get_results("P1", part1, read_lines, "input.txt")
 
-    get_results("P2 Example", part2, read_lines, "example.txt")
     get_results("P2", part2, read_lines, "input.txt")
+    get_results("P2 Example", part2, read_lines, "example.txt")
