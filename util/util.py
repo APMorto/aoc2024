@@ -20,3 +20,11 @@ def seek_character_point(grid: List[str], c: str):
 
 def rotate_matrix(matrix):
     return tuple(zip(*(r for r in matrix[::-1])))
+
+def pad_grid(grid: List[list], padding):
+    h, w = len(grid), len(grid[0])
+    for l in grid:
+        l.insert(0, padding)
+        l.append(padding)
+    grid.insert(0, [padding] * (w+2))
+    grid.append([padding] * (w+2))
