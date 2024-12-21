@@ -189,19 +189,19 @@ def get_paths_map(keypad: List[List[Optional[str]]], buttons):
 
             dr, dc = r2 - r1, c2 - c1
 
-            x_moves = ('<' if dc < 0 else '>') * abs(dc)
-            y_moves = ('^' if dr < 0 else 'v') * abs(dr)
+            x_moves = ('<' if dc < 0 else '>'), abs(dc)
+            y_moves = ('^' if dr < 0 else 'v'), abs(dr)
 
             if dr == 0: # Horizontal
-                paths_map[a, b] = [x_moves]
+                paths_map[a, b] = [[x_moves]]
             elif dc == 0:   # Vertical
-                paths_map[a, b] = [y_moves]
+                paths_map[a, b] = [[y_moves]]
             elif keypad[r1][c2] is None:    # Initially moving horizontally would shove us off the map
-                paths_map[a, b] = [y_moves + x_moves]
+                paths_map[a, b] = [[y_moves, x_moves]]
             elif keypad[r2][c1] is None:    # Initially moving vertically would put os off the map
-                paths_map[a, b] = [x_moves + y_moves]
+                paths_map[a, b] = [[x_moves, y_moves]]
             else:                                       # We may move V, H or H, V
-                paths_map[a, b] = [x_moves + y_moves, y_moves + x_moves]
+                paths_map[a, b] = [[x_moves, y_moves], [y_moves, x_moves]]
     return paths_map
 
 def min_presses_p2(code, number_paths_map, action_costs):
@@ -211,34 +211,50 @@ def min_presses_p2(code, number_paths_map, action_costs):
         ) for a, b in zip('A' + code, code) # A -> num1 -> num2 ...
     )
 
+def get_path_cost(path_costs, middle_path):
+    out = 0
+    # Get to the first one
+    prev = 'A'
+    #prev = middle_path[0][0]
+    for tile, amt in middle_path:
+        if amt == 0:
+            continue
+        out += path_costs[prev, tile]   # Cost to get to this tile
+        out += amt  # Cost of pushing it that many times
+        prev = tile
+    out += path_costs[prev, 'A']    # Cost of returning to A.
+    return out
+
+def min_number_presses(code, number_paths_map, direction_path_costs):
+    out = 0
+    for a, b in zip('A' + code, code):
+        out += min(get_path_cost(direction_path_costs, path) for path in number_paths_map[a, b]) + 1
+    return out
+
+
 def part2(lines):
     paths_map = get_paths_map(directional_keypad, ACTIONS)
+    path_costs = collections.defaultdict(lambda: 0) # It costs the human nothing to move from button to button.
 
-    #print(paths_map)
-    action_costs = {'>': 1, 'v': 1, '<': 1, '^': 1, 'A': 1}
-    for i in range(2):
-        new_action_costs = {}
+    for i in range(25):
+        new_path_costs = {}
 
-        for action in ACTIONS:
-            new_action_costs[action] = min(
-                sum(action_costs[c] for c in chain(path_to, path_from))
-                for path_to in paths_map['A', action] for path_from in paths_map[action, 'A']
-            ) + 1
-
-        action_costs = new_action_costs
-
-        print(i)
-        print(new_action_costs)
+        for a in ACTIONS:
+            for b in ACTIONS:
+                # A -> button press x times -> [next button press x times ->] A
+                new_path_costs[(a, b)] = min(
+                    get_path_cost(path_costs, middle_path)
+                    for middle_path in paths_map[a, b]  # We try all the possible paths to get between them
+                )
+        path_costs = new_path_costs
+        print(i, path_costs)
 
     number_paths_map = get_paths_map(numeric_keypad, "0123456789A")
     print(number_paths_map)
 
     out = 0
     for code in lines:
-        min_presses = min_presses_p2(code, number_paths_map, action_costs)
-        print(code, min_presses)
-        if min_presses is None:
-            print("Couldnt solve code", code)
+        min_presses = min_number_presses(code, number_paths_map, path_costs)
 
         numeric_part = int(code[:-1])
         out += numeric_part * min_presses
