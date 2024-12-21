@@ -21,6 +21,11 @@ pad_grid(numeric_keypad, None)
 init_dir_rc = seek_character(directional_keypad, 'A')
 init_num_rc = seek_character(numeric_keypad, 'A')
 
+
+
+
+
+
 def result_keypad(action, r, c, keypad) -> Tuple[Optional[tuple], Optional[str]]:
     match action:
         case '^':
@@ -39,7 +44,7 @@ def result_keypad(action, r, c, keypad) -> Tuple[Optional[tuple], Optional[str]]
     return (r, c), None
 
 # A state will be a tuple of (dr1, dc1, dr2, dc2, nr1, nc2, amt_typed)
-def neighbors(state_tuple, code):
+def neighbors_p1(state_tuple, code):
     dr1, dc1, dr2, dc2, nr1, nc1, amt_typed = state_tuple
 
     for action in ACTIONS:
@@ -76,7 +81,7 @@ def neighbors(state_tuple, code):
         yield dr1_, dc1_, dr2_, dc2_, nr1_, nc1_, amt_typed_
 
 
-def min_presses_for_code(code):
+def min_presses_for_code_p1(code):
     initial_state = (*init_dir_rc, *init_dir_rc, *init_num_rc, 0)
     seen = {initial_state}
     q = collections.deque([(0, initial_state)])
@@ -84,7 +89,7 @@ def min_presses_for_code(code):
     while q:
         d, state = q.popleft()
         #print(d, state)
-        for neighbor in neighbors(state, code):
+        for neighbor in neighbors_p1(state, code):
             if neighbor not in seen:
                 if neighbor[6] == 4:
                     return d+1
@@ -97,7 +102,7 @@ def min_presses_for_code(code):
 def part1(lines):
     out = 0
     for code in lines:
-        min_presses = min_presses_for_code(code)
+        min_presses = min_presses_for_code_p1(code)
         if min_presses is None:
             print("Couldnt solve code", code)
 
@@ -107,12 +112,78 @@ def part1(lines):
 
 
 
+def neighbors_p2(state, code):
+    *directional_positions, num_position, amt_typed = state
+
+    for action in ACTIONS:
+        amt_ = amt_typed
+        key_pos = num_position
+
+        # Go through the actions of the keypads.
+        valid = True
+        diff_position_stack = []
+        prev_action = action
+        for i in range(25):
+            in_position = directional_positions[i]
+            out_position, out_action = result_keypad(prev_action, *in_position, directional_keypad)
+
+            if out_position is None:
+                valid = False
+                break
+
+            diff_position_stack.append(out_position)
+            prev_action = out_action
+            if out_action is None:
+                break
+
+        if not valid:
+            continue
+
+        # Go through the action of the keypad
+        if prev_action is not None:
+            key_pos, key_action = result_keypad(prev_action, *num_position, numeric_keypad)
+            if key_pos is None:
+                continue
+
+            if key_action is not None:
+                if code[amt_typed] != key_action:
+                    continue
+                amt_ += 1
+
+        # Was valid. Yield state.
+        new_dir_positions = (*diff_position_stack, *directional_positions[len(diff_position_stack):])
+        yield (*new_dir_positions, key_pos, amt_)
 
 
+def min_presses_for_code_p2(code):
+    initial_state = (*[init_dir_rc]*25, init_num_rc, 0)
+    seen = {initial_state}
+    q = collections.deque([(0, initial_state)])
+
+    while q:
+        d, state = q.popleft()
+        #print(d, state)
+        for neighbor in neighbors_p2(state, code):
+            if neighbor not in seen:
+                if neighbor[6] == 4:
+                    return d+1
+                seen.add(neighbor)
+                q.append((d + 1, neighbor))
+
+    return None
 
 
-def part2(_):
-    pass
+def part2(lines):
+    out = 0
+    for code in lines:
+        min_presses = min_presses_for_code_p2(code)
+        if min_presses is None:
+            print("Couldnt solve code", code)
+
+        numeric_part = int(code[:-1])
+        out += numeric_part * min_presses
+    return out
+
 
 # we move from r1, rc -> r2, c2
 # There are abs(r1 - r2) Choose abs(c1 -c2) possible ways to get from r1, c1 -> r2, c2
