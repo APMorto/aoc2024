@@ -11,7 +11,12 @@ def get_results(name, solution, parse_fn, fp, **kwargs):
     if solution is None:
         print(f"{name}: N/A")
         return None, 0, 0
-    input, parse_time = time_with_output(lambda: parse_fn(fp))
+    try:
+        input, parse_time = time_with_output(lambda: parse_fn(fp))
+    except FileNotFoundError as e:
+        print(e)
+        return None, 0, 0
+
     res, elapsed = time_with_output(lambda: solution(input))
 
     if kwargs.get("dense", False):
