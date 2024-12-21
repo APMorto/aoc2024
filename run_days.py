@@ -1,4 +1,5 @@
 import os
+import sys
 
 from util.timer import get_results
 from parser.parser import read_grid, read_list_grid, read_line, read_line_blocks, read_lines
@@ -23,6 +24,7 @@ import day_17_chronospatial_computer.chronospatial_computer as day_17
 import day_18_ram_run.ram_run                   as day_18
 import day_19_linen_layout.linen_layout         as day_19
 import day_20_race_condition.race_condition     as day_20
+import day_21_keypad_conundrum.keypad_conundrum as day_21
 
 day_information = {
 # DAY: (p1, p2, input_fn, [input_fn2], "dir")
@@ -32,7 +34,7 @@ day_information = {
     4: (day_04.part1,   day_04.part2,       read_grid,          "day_04_ceres_search"),
     5: (day_05.part1,   day_05.part2,       read_line_blocks,   "day_05_print_queue"),
     6: (day_06.part1,   day_06.part2_graph, read_list_grid,     "day_06_guard_gallivant"),
-    7: (day_07.part1,   day_07.part2, day_07.read_equations, "day_07_bridge_repair"),
+    7: (day_07.part1,   day_07.part2, day_07.read_equations,    "day_07_bridge_repair"),
     8: (day_08.part1,   day_08.part2,       read_grid,          "day_08_resonant_collinearity"),
     9: (day_09.part1,   day_09.part2,       read_line,          "day_09_disk_fragmenter"),
     10: (day_10.part1,  day_10.part2,       read_grid,          "day_10_hoof_it"),
@@ -43,14 +45,16 @@ day_information = {
     15: (day_15.part1,  day_15.part2,       read_line_blocks,   "day_15_warehouse_woes"),
     16: (day_16.part1,  day_16.part2,       read_grid,          "day_16_reindeer_maze"),
     17: (day_17.part1,  day_17.part2,       read_line_blocks,   "day_17_chronospatial_computer"),
-    18: (day_18.part1,  day_18.part2,       read_lines,          "day_18_ram_run"),
-    19: (day_19.part1,  day_19.part2,       read_line_blocks,    "day_19_linen_layout"),
-    20: (day_20.part1,  day_20.part2_sliding_window,       read_grid,    "day_20_race_condition"),
+    18: (day_18.part1,  day_18.part2,       read_lines,         "day_18_ram_run"),
+    19: (day_19.part1,  day_19.part2,       read_line_blocks,   "day_19_linen_layout"),
+    20: (day_20.part1,  day_20.part2_sliding_window, read_grid, "day_20_race_condition"),
+    21: (day_21.part1,  day_21.part2,       read_lines,         "day_21_keypad_conundrum"),
 
 }
 
 
 if __name__ == "__main__":
+    print(sys.version, sys.argv, '\n')
     p1_results, p2_results = [], []
     p1_times, p2_times = [], []
     p1_parse_times, p2_parse_times = [], []
