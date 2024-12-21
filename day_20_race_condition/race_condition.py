@@ -259,3 +259,6 @@ if __name__ == '__main__':
     get_results("P2 Inline", part2_inline, read_grid, "input.txt", expected=986082)
     get_results("P2 Sliding Window", part2_sliding_window, read_grid, "input.txt", expected=986082)
     get_results("P2", part2, read_grid, "input.txt", expected=986082)
+
+    # Manually change it to 30. (line ~170)
+    #get_results("P2 Challenge", part2, read_grid, "challenge.txt", expected=299)

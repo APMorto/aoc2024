@@ -89,9 +89,9 @@ if __name__ == "__main__":
     total_times = list(map(sum, zip(p1_times, p2_times, p1_parse_times, p2_parse_times)))
 
     # Header.
-    print("Total Time:", total_time, "(s)")
-    print(f"Total part 1: {total_p1_time:.3f}s | {total_p1_time / total_time: 3.1%}")
-    print(f"Total part 2: {total_p2_time:.3f}s | {total_p2_time / total_time: 3.1%}")
+    print("Total Time (All Days):", total_time, "(s)")
+    print(f"Total part 1 (All Days): {total_p1_time:.3f}s | {total_p1_time / total_time: 3.1%}")
+    print(f"Total part 2 (All Days): {total_p2_time:.3f}s | {total_p2_time / total_time: 3.1%}")
     print(f"Total parsing (P1&2): {total_p1_parse_time+total_p2_parse_time:.3f}s | {(total_p1_parse_time+total_p2_parse_time) / total_time: 3.1%}")
     print()
 
