@@ -1,11 +1,9 @@
 import collections
-from itertools import chain
-
 from util.timer import get_results
-from parser.parser import read_lines, read_line, read_grid, read_list_grid, read_line_blocks
-from typing import List, Optional, Tuple
+from util.util import seek_character
+from parser.parser import read_lines
+from typing import List, Optional
 
-from util.util import pad_grid, seek_character
 
 ACTIONS = ['^', 'A', '<',  'v', '>']
 directional_keypad: List[List[Optional[str]]] = [[None, '^', 'A'],
