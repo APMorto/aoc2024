@@ -1,3 +1,4 @@
+import math
 from collections import defaultdict
 
 import numpy as np
@@ -97,7 +98,6 @@ def part2(lines: List[str]):
 # This defines some sort of a matrix with entries in integers modulo 2 (thats what XOR is)
 # And we could use fast matrix exponentiation to do this
 # Assuming that you can do that
-N = 24
 
 
 def get_hash_matrix():
@@ -112,19 +112,56 @@ def get_hash_matrix():
     return cur
 
 def part1_matrix(lines: List[str]):
-    hash_matrix = get_hash_matrix()
+    #hash_matrix = get_hash_matrix()
     #two_thousandth_hash_matrix = matrix_power_linear(hash_matrix, 2000)
-    two_thousandth_hash_matrix = matrix_power_log(hash_matrix, 2000)
+    #two_thousandth_hash_matrix = matrix_power_log(hash_matrix, 2000)
+    two_thousandth_hash_matrix = TWO_THOUSANDTH_EXPONENTIATED_MATRIX
+    shifted_base = (1 << np.arange(24))
 
     out = 0
     for line in lines:
         num = int(line)
-        num_row_vector = row_vector_of_integer(num, N)
-        num_row_vector = num_row_vector @ two_thousandth_hash_matrix
-        num_row_vector %= 2
+        #num_row_vector = row_vector_of_integer(num, N)
 
-        out += integer_of_row_vector(num_row_vector)
+        # https://stackoverflow.com/questions/37580272/numpy-boolean-array-representation-of-an-integer
+        #num_row_vector = (num & (1 << np.arange(24))) > 0  # SLOWER!!
+        num_row_vector = num & shifted_base > 0
+        #print(num_row_vector.dtype)
+
+        #print(num_row_vector)
+        num_row_vector = num_row_vector @ two_thousandth_hash_matrix
+        num_row_vector &= 1
+
+        #out += integer_of_row_vector(num_row_vector)
+        out += np.sum(num_row_vector * shifted_base)    # Faster.
     return out
+
+
+TWO_THOUSANDTH_EXPONENTIATED_MATRIX = np.array([
+ [1, 0, 1, 0, 1, 1, 1, 0, 1, 1, 1, 0, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 1],
+ [1, 0, 1, 0, 0, 1, 0, 0, 0, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 1, 1, 0, 1, 0],
+ [1, 0, 1, 0, 0, 0, 0, 0, 0, 1, 0, 1, 0, 0, 0, 1, 1, 1, 1, 0, 1, 0, 1, 0],
+ [1, 1, 1, 0, 1, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 1, 0, 0, 1, 1, 1, 0, 0, 0],
+ [0, 0, 0, 1, 0, 0, 0, 1, 1, 1, 0, 1, 0, 0, 1, 0, 1, 0, 1, 1, 0, 1, 1, 0],
+ [1, 0, 0, 0, 0, 1, 0, 1, 0, 0, 0, 0, 1, 1, 0, 1, 0, 0, 1, 1, 0, 0, 1, 0],
+ [0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 1, 0, 1, 1, 0, 0, 0, 1, 0, 0, 1, 1, 1, 1],
+ [1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 1, 0, 1, 0, 1, 0, 0, 0, 1, 1, 1, 0, 1],
+ [1, 1, 0, 0, 0, 1, 1, 0, 1, 1, 1, 0, 1, 0, 1, 1, 0, 1, 1, 0, 0, 0, 1, 1],
+ [1, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 1, 0, 0, 0, 1, 1, 0, 1, 0, 0, 0, 0, 1],
+ [1, 0, 0, 0, 1, 0, 1, 0, 1, 0, 1, 1, 1, 1, 0, 1, 1, 0, 1, 1, 1, 0, 1, 1],
+ [0, 0, 0, 0, 0, 1, 0, 1, 0, 0, 0, 0, 1, 1, 0, 1, 0, 0, 1, 1, 1, 1, 0, 0],
+ [0, 0, 0, 0, 1, 1, 1, 0, 1, 1, 1, 1, 0, 0, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0],
+ [1, 0, 0, 1, 0, 0, 1, 1, 0, 1, 1, 1, 1, 1, 0, 0, 0, 1, 0, 1, 1, 1, 0, 1],
+ [1, 1, 1, 0, 0, 0, 1, 0, 1, 0, 0, 0, 0, 1, 0, 1, 1, 1, 1, 1, 0, 0, 1, 0],
+ [1, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 0, 0, 0, 0, 1, 0, 0, 0],
+ [0, 1, 1, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 1, 1, 1, 1, 0, 0, 1, 1, 0, 1, 1],
+ [0, 0, 1, 1, 1, 0, 0, 0, 0, 1, 1, 1, 0, 1, 1, 0, 0, 0, 1, 0, 0, 1, 0, 0],
+ [0, 0, 0, 1, 1, 1, 0, 0, 1, 1, 1, 0, 1, 0, 1, 1, 0, 1, 0, 1, 1, 1, 0, 1],
+ [0, 0, 0, 0, 0, 1, 1, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 1, 1],
+ [1, 0, 1, 1, 0, 1, 0, 0, 1, 1, 1, 0, 0, 1, 0, 1, 1, 0, 0, 0, 0, 0, 1, 0],
+ [1, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 0, 0, 1, 0, 1, 1, 0, 1, 0, 1],
+ [0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 0, 0, 0, 1, 0, 0, 1, 0, 1, 0, 0, 0, 1, 0],
+ [1, 0, 1, 1, 0, 0, 1, 0, 0, 0, 1, 1, 1, 0, 0, 1, 0, 1, 0, 1, 0, 1, 1, 0]], dtype=np.uint)
 
 
 
