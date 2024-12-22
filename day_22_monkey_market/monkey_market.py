@@ -52,43 +52,35 @@ def part2(lines: List[str]):
         sequence_integer = 0
         CHANGE_WIDTH = 5
         SEQUENCE_MASK = (1 << (CHANGE_WIDTH * 4)) - 1
-        CHANGE_MASK = (1 << CHANGE_WIDTH) - 1
 
         # Initialize sequence with first four changes.
+        prev = cur % 10
         for i in range(3):
-            #print(bin(sequence_integer))
-            prev = cur
             cur = (cur ^ (cur << 6)) & PRUNE_MASK  # We iteratively mix and prune it.
             cur = (cur ^ (cur >> 5)) & PRUNE_MASK
             cur = (cur ^ (cur << 11)) & PRUNE_MASK
             cur_price = (cur % 10)
-            change = cur_price - (prev % 10) + 10 # Change in range [0..18]
+            change = cur_price - prev + 10 # Change in range [0..18]
             sequence_integer = ((sequence_integer << CHANGE_WIDTH) | change) & SEQUENCE_MASK
-        #counts[sequence_integer] += cur_price
-
-        EX_SEQ = make_sequence_integer(-2, 1, -1, 3)
+            prev = cur_price
 
         for k in range(3, 2000):
-            prev = cur
             cur = (cur ^ (cur << 6)) & PRUNE_MASK  # We iteratively mix and prune it.
             cur = (cur ^ (cur >> 5)) & PRUNE_MASK
             cur = (cur ^ (cur << 11)) & PRUNE_MASK
 
             cur_price = (cur % 10)
-            change = cur_price - (prev % 10) + 10  # Change in range [0..18]
+            change = cur_price - prev + 10  # Change in range [0..18]
             sequence_integer = ((sequence_integer << CHANGE_WIDTH) | change) & SEQUENCE_MASK
+            prev = cur_price
 
             if sequence_integer not in already_sold:
                 counts[sequence_integer] += cur_price
                 already_sold.add(sequence_integer)
 
-    #print(sorted(counts.values(), reverse=True)[:100])
     return max(counts.values())
 
 
-
-#for i in range(10):
-#    print(kth_secret_number(123, i))
 
 if __name__ == '__main__':
     get_results("P1 Example", part1, read_lines, "example.txt", expected=37327623)
