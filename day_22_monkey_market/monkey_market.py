@@ -1,8 +1,11 @@
 from collections import defaultdict
 
+import numpy as np
+
 from util.timer import get_results
 from parser.parser import read_lines, read_line, read_grid, read_list_grid, read_line_blocks
 from typing import List
+from util.matrix_math import matrix_power_linear, row_vector_of_integer, integer_of_row_vector
 
 MOD = 16777216 # 1 << 24
 #PRUNE_MASK = (1 << 24) - 1  # 0b[1]^24
@@ -93,12 +96,88 @@ def part2(lines: List[str]):
 # This defines some sort of a matrix with entries in integers modulo 2 (thats what XOR is)
 # And we could use fast matrix exponentiation to do this
 # Assuming that you can do that
+N = 24
+
+def left_shift_of_matrix(matrix: np.ndarray, shift: int):
+    # We apply the matrix to a row vector
+    # Thus, we shift down the matrix.
+    shift_matrix = left_shift_matrix(matrix.shape[0], shift)
+    return np.matmul(matrix, shift_matrix) % 2
+    print(matrix.shape, shift_matrix.shape)
+    #return matrix @ left_shift_matrix
+    #shifted_matrix = np.zeros(matrix.shape, dtype=np.uint8)
+    #shifted_matrix[shift:, :] = matrix[:N-shift, :]
+    #return shifted_matrix
+
+def left_shift_matrix(n: int, shift: int):
+    matrix = np.eye(n, n, dtype=np.uint8)
+    shifted_matrix = np.zeros(matrix.shape, dtype=np.uint8)
+    shifted_matrix[:N-shift, :] = matrix[shift:, :]
+    return shifted_matrix
+
+def right_shift_of_matrix(matrix: np.ndarray, shift: int):
+    shift_matrix = right_shift_matrix(matrix.shape[0], shift)
+    return np.matmul(matrix, shift_matrix) % 2
+    shifted_matrix = np.zeros(matrix.shape, dtype=np.uint8)
+    shifted_matrix[:N-shift, :] = matrix[shift:, :]
+    return shifted_matrix
+
+def right_shift_matrix(n: int, shift: int):
+    matrix = np.eye(n, n, dtype=np.uint8)
+    shifted_matrix = np.zeros(matrix.shape, dtype=np.uint8)
+    shifted_matrix[shift:, :] = matrix[:N-shift, :]
+    return shifted_matrix
+
+
+def get_hash_matrix():
+    # This matrix represents Taking a row vector of the bits, and applying this will yield the next hash state.
+    cur = np.eye(N, N, dtype=np.uint8)
+    left_shift_6 = left_shift_of_matrix(cur, 6)
+    cur ^= left_shift_6
+    right_shift_5 = right_shift_of_matrix(cur, 5)
+    cur ^= right_shift_5
+    left_shift_11 = left_shift_of_matrix(cur, 11)
+    cur ^= left_shift_11
+    return cur
+
+def part1_matrix(lines: List[str]):
+    hash_matrix = get_hash_matrix()
+
+    out = 0
+    for line in lines:
+        num = int(line)
+        #print("INITIAL", num)
+        num_row_vector = row_vector_of_integer(num, N)
+        for i in range(2000):
+            num_row_vector = num_row_vector @ hash_matrix
+            num_row_vector %= 2
+            #print(integer_of_row_vector(num_row_vector))
+
+        out += integer_of_row_vector(num_row_vector)
+    return out
+
+
+
+
+#get_hash_matrix()
+
+#num = integer_of_row_vector(
+#    left_shift_of_matrix(
+#        row_vector_of_integer(32, 24), 6))
+#num = 192
+#num_vector = row_vector_of_integer(num, N)
+#left_shift_by_6 = right_shift_matrix(N, 6)
+#vector_shifted = np.matmul(num_vector, left_shift_by_6) % 2
+#result_number = integer_of_row_vector(vector_shifted)
+#print(result_number)
 
 
 
 if __name__ == '__main__':
     get_results("P1 Example", part1, read_lines, "example.txt", expected=37327623)
     get_results("P1", part1, read_lines, "input.txt", expected=20506453102)
+    get_results("P1 Matrix", part1_matrix, read_lines, "example.txt", expected=37327623)
+    #get_results("P1 Matrix", part1_matrix, read_lines, "input.txt", expected=20506453102)
 
     get_results("P2 Example", part2, read_lines, "example2.txt", expected=23)
     get_results("P2", part2, read_lines, "input.txt", expected=2423)
