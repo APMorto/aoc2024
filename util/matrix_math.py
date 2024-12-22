@@ -22,3 +22,29 @@ def integer_of_row_vector(row_vector: np.ndarray):
     for i in range(n):
         out += int(row_vector[i]) << i
     return out
+
+
+def left_shift_of_matrix(matrix: np.ndarray, shift: int):
+    # We apply the matrix to a row vector
+    # Thus, we shift down the matrix.
+    shift_matrix = left_shift_matrix(matrix.shape[0], shift)
+    return np.matmul(matrix, shift_matrix) % 2
+
+
+def left_shift_matrix(n: int, shift: int):
+    matrix = np.eye(n, n, dtype=np.uint8)
+    shifted_matrix = np.zeros(matrix.shape, dtype=np.uint8)
+    shifted_matrix[:n-shift, :] = matrix[shift:, :]
+    return shifted_matrix
+
+
+def right_shift_of_matrix(matrix: np.ndarray, shift: int):
+    shift_matrix = right_shift_matrix(matrix.shape[0], shift)
+    return np.matmul(matrix, shift_matrix) % 2
+
+
+def right_shift_matrix(n: int, shift: int):
+    matrix = np.eye(n, n, dtype=np.uint8)
+    shifted_matrix = np.zeros(matrix.shape, dtype=np.uint8)
+    shifted_matrix[shift:, :] = matrix[:n-shift, :]
+    return shifted_matrix
