@@ -6,7 +6,7 @@ from util.timer import get_results
 from parser.parser import read_lines
 from typing import List
 from util.matrix_math import row_vector_of_integer, integer_of_row_vector, left_shift_of_matrix, \
-    right_shift_of_matrix
+    right_shift_of_matrix, matrix_power_linear
 
 MOD = 16777216 # 1 << 24
 #PRUNE_MASK = (1 << 24) - 1  # 0b[1]^24
@@ -113,14 +113,17 @@ def get_hash_matrix():
 
 def part1_matrix(lines: List[str]):
     hash_matrix = get_hash_matrix()
+    two_thousandth_hash_matrix = matrix_power_linear(hash_matrix, 2000)
 
     out = 0
     for line in lines:
         num = int(line)
         num_row_vector = row_vector_of_integer(num, N)
-        for i in range(2000):
-            num_row_vector = num_row_vector @ hash_matrix
-            num_row_vector %= 2
+        #for i in range(2000):
+        #    num_row_vector = num_row_vector @ hash_matrix
+        #    num_row_vector %= 2
+        num_row_vector = num_row_vector @ two_thousandth_hash_matrix
+        num_row_vector %= 2
 
         out += integer_of_row_vector(num_row_vector)
     return out
