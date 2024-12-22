@@ -6,7 +6,7 @@ from util.timer import get_results
 from parser.parser import read_lines
 from typing import List
 from util.matrix_math import row_vector_of_integer, integer_of_row_vector, left_shift_of_matrix, \
-    right_shift_of_matrix, matrix_power_linear
+    right_shift_of_matrix, matrix_power_linear, matrix_power_log
 
 MOD = 16777216 # 1 << 24
 #PRUNE_MASK = (1 << 24) - 1  # 0b[1]^24
@@ -113,15 +113,13 @@ def get_hash_matrix():
 
 def part1_matrix(lines: List[str]):
     hash_matrix = get_hash_matrix()
-    two_thousandth_hash_matrix = matrix_power_linear(hash_matrix, 2000)
+    #two_thousandth_hash_matrix = matrix_power_linear(hash_matrix, 2000)
+    two_thousandth_hash_matrix = matrix_power_log(hash_matrix, 2000)
 
     out = 0
     for line in lines:
         num = int(line)
         num_row_vector = row_vector_of_integer(num, N)
-        #for i in range(2000):
-        #    num_row_vector = num_row_vector @ hash_matrix
-        #    num_row_vector %= 2
         num_row_vector = num_row_vector @ two_thousandth_hash_matrix
         num_row_vector %= 2
 
@@ -133,8 +131,8 @@ def part1_matrix(lines: List[str]):
 if __name__ == '__main__':
     get_results("P1 Example", part1, read_lines, "example.txt", expected=37327623)
     get_results("P1", part1, read_lines, "input.txt", expected=20506453102)
-    get_results("P1 Matrix", part1_matrix, read_lines, "example.txt", expected=37327623)
-    #get_results("P1 Matrix", part1_matrix, read_lines, "input.txt", expected=20506453102)
+    get_results("P1 Matrix Example", part1_matrix, read_lines, "example.txt", expected=37327623)
+    get_results("P1 Matrix", part1_matrix, read_lines, "input.txt", expected=20506453102)
 
     get_results("P2 Example", part2, read_lines, "example2.txt", expected=23)
     get_results("P2", part2, read_lines, "input.txt", expected=2423)

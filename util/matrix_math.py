@@ -9,6 +9,32 @@ def matrix_power_linear(matrix: np.ndarray, n: int):
         cur @= matrix
     return cur
 
+def matrix_power_log(matrix: np.ndarray, n: int):
+    if n == 0:
+        return np.eye(*matrix.shape)
+    elif n == 1:
+        return matrix
+
+    call_stack_do_square = []
+    cur_n = n
+    while cur_n > 1:
+        if cur_n % 2 == 1:
+            call_stack_do_square.append(False)
+            cur_n -= 1
+        else:
+            call_stack_do_square.append(True)
+            cur_n //= 2
+
+    cur = matrix.copy()
+    for do_square in reversed(call_stack_do_square):
+        if do_square:
+            cur @= cur
+        else:
+            cur @= matrix
+    return cur
+
+
+
 def row_vector_of_integer(val: int, n: int):
     out = np.zeros(n, dtype=np.uint8)
     for i in range(n):
