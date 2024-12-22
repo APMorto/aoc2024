@@ -111,6 +111,13 @@ def get_hash_matrix():
     cur ^= left_shift_11
     return cur
 
+def part1_binary_matrix_operations(lines: List[str]):
+    out = 0
+    for line in lines:
+        num = int(line)
+        out += raise_to_2k_power(num)
+    return out
+
 def part1_matrix(lines: List[str]):
     #hash_matrix = get_hash_matrix()
     #two_thousandth_hash_matrix = matrix_power_linear(hash_matrix, 2000)
@@ -121,8 +128,6 @@ def part1_matrix(lines: List[str]):
     out = 0
     for line in lines:
         num = int(line)
-        out += raise_to_2k_power(num)
-        continue
         #num_row_vector = row_vector_of_integer(num, N)
 
         # https://stackoverflow.com/questions/37580272/numpy-boolean-array-representation-of-an-integer
@@ -171,11 +176,18 @@ COLUMN_VALUES = [11593647, 115592, 9650831, 11935952, 464073, 1874787, 8943425, 
 def raise_to_2k_power(num):
     out = 0
     for i, col_val in enumerate(COLUMN_VALUES):
-        summed = num & col_val
+        bin_val = num & col_val # dot product.
 
-        # Sum the values, mod2
-        bin_val = summed.bit_count() % 2
-        out += bin_val << i
+        # Sum of values % 2
+        # Repeated addition mod 2 in accumulators of the least significant bit portions.
+        # Eg 0b1010|1001 -> 0bXXXX0011, where | denotes the separation,
+        # and 0, 0, 1, 1 in the result are all accumulators representing 1+1, 0+0, 0+1, 1+0, all % 2
+        bin_val ^= bin_val >> 16
+        bin_val ^= bin_val >> 8
+        bin_val ^= bin_val >> 4
+        bin_val ^= bin_val >> 2
+        bin_val ^= bin_val >> 1
+        out += (bin_val & 1) << i   # Values to the left of our accumulator are junk.
     return out
 
 
@@ -185,6 +197,7 @@ if __name__ == '__main__':
     get_results("P1", part1, read_lines, "input.txt", expected=20506453102)
     get_results("P1 Matrix Example", part1_matrix, read_lines, "example.txt", expected=37327623)
     get_results("P1 Matrix", part1_matrix, read_lines, "input.txt", expected=20506453102)
+    get_results("P1 Binary Matrix", part1_binary_matrix_operations, read_lines, "input.txt", expected=20506453102)
 
     get_results("P2 Example", part2, read_lines, "example2.txt", expected=23)
     get_results("P2", part2, read_lines, "input.txt", expected=2423)
