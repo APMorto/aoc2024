@@ -102,7 +102,7 @@ def part2(lines: List[str]):
 
 def get_hash_matrix():
     # This matrix represents Taking a row vector of the bits, and applying this will yield the next hash state.
-    cur = np.eye(N, N, dtype=np.uint8)
+    cur = np.eye(24, 24, dtype=np.uint8)
     left_shift_6 = left_shift_of_matrix(cur, 6)
     cur ^= left_shift_6
     right_shift_5 = right_shift_of_matrix(cur, 5)
@@ -121,6 +121,8 @@ def part1_matrix(lines: List[str]):
     out = 0
     for line in lines:
         num = int(line)
+        out += raise_to_2k_power(num)
+        continue
         #num_row_vector = row_vector_of_integer(num, N)
 
         # https://stackoverflow.com/questions/37580272/numpy-boolean-array-representation-of-an-integer
@@ -162,6 +164,19 @@ TWO_THOUSANDTH_EXPONENTIATED_MATRIX = np.array([
  [1, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 0, 0, 1, 0, 1, 1, 0, 1, 0, 1],
  [0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 0, 0, 0, 1, 0, 0, 1, 0, 1, 0, 0, 0, 1, 0],
  [1, 0, 1, 1, 0, 0, 1, 0, 0, 0, 1, 1, 1, 0, 0, 1, 0, 1, 0, 1, 0, 1, 1, 0]], dtype=np.uint)
+
+# values of the columns, going up vertically.
+COLUMN_VALUES = [11593647, 115592, 9650831, 11935952, 464073, 1874787, 8943425, 6826032, 5526809, 5714711, 9844545, 10663580, 9219426, 7597282, 491792, 9818029, 7423510, 8679750, 6442813, 10841274, 900302, 10889424, 14239094, 2959297]
+
+def raise_to_2k_power(num):
+    out = 0
+    for i, col_val in enumerate(COLUMN_VALUES):
+        summed = num & col_val
+
+        # Sum the values, mod2
+        bin_val = summed.bit_count() % 2
+        out += bin_val << i
+    return out
 
 
 
