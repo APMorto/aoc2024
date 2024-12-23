@@ -2,7 +2,7 @@ import math
 from collections import defaultdict
 
 from util.timer import get_results
-from parser.parser import read_lines, read_line, read_grid, read_list_grid, read_line_blocks
+from parser.parser import read_lines
 from typing import List
 
 # This question requires us to obtain the intersection between two sets very frequently.
