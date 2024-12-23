@@ -1,3 +1,4 @@
+import math
 from collections import defaultdict
 
 from util.timer import get_results
@@ -58,43 +59,81 @@ def part1(lines: List[str]):
 
 
 
-    # This isgnores whether the 3 are all connected.
-    # We can start with only one t?
-    # and then 2 t?, /2 (as double counted)
-    # and then 3 t? /3, (as triple counted)
-    single = 0
-    double = 0
-    triple = 0
 
+def part2(lines: List[str]):
+    edges = read_computer_connections(lines)
+    n = len(edges)
+    # n = 520
+
+    # Map each edge to an integer.
+    nodes_at_indices = sorted(edges.keys())  # Lookup for end solution.
+    node_indices = {node: i for i, node in enumerate(nodes_at_indices)}
+
+    # Get neighbor sets as integers.
+    bitset_edge_sets = [0] * n
     for node, neighbors in edges.items():
-        if node[0] != 't':
-            continue
-        ts = 0
-        non_ts = 0
+        bitset = 0
         for neighbor in neighbors:
-            if neighbor[0] == 't':
-                ts += 1
-            else:
-                non_ts += 1
+            bitset |= (1 << node_indices[neighbor])
+        bitset_edge_sets[node_indices[node]] = bitset
 
-        single += non_ts * (non_ts-1) // 2   # non_ts Choose 2
-        double += ts * non_ts
-        triple += ts * (ts-1) // 2
+    # Largest fully connected set of computers.
+    best = 0
+    best_val = 0
+    def max_fully_connected_component(contained: int, candidates: int, tried: int):
+        nonlocal best, best_val, bitset_edge_sets
 
-    #print(single, double, triple)
-    out = single + (double // 2) + (triple // 3)
-    return out
+        # No more to add. We're done.
+        if candidates == 0:
+            amt = contained.bit_count()
+            if amt > best:
+                best = amt
+                best_val = contained
+            return
+
+        # Check if this is hopeless.
+        if (contained | candidates).bit_count() <= best:
+            return
+
+        # Consider adding each candidate.
+        cur_candidates = candidates & ~tried
+        while cur_candidates != 0:
+            # Remove the rightmost 1 bit.
+            next_candidates = cur_candidates & (cur_candidates - 1)
+            candidate = cur_candidates ^ next_candidates
+            cur_candidates = next_candidates
+
+            # Dont try this again.
+            tried |= candidate
+
+            candidate_index = int(math.log2(candidate))
+            assert candidate == (1 << candidate_index), f"{candidate_index}, {candidate}"
+
+            # Add candidate. Filter the remaining possible edges.
+            max_fully_connected_component(contained | candidate, candidates & bitset_edge_sets[candidate_index], tried)
+
+    all_set_bits = (1 << n) - 1
+    max_fully_connected_component(0, all_set_bits, 0)
+
+    out_strings = []
+    while best_val != 0:
+        next_val = best_val & (best_val - 1)
+        diff = best_val ^ next_val
+        i = int(math.log2(diff))
+        out_strings.append(nodes_at_indices[i])
+        best_val = next_val
+    return ",".join(out_strings)
 
 
 
 
-def part2(_):
-    pass
+
+
 
 
 if __name__ == '__main__':
     get_results("P1 Example", part1, read_lines, "example.txt", expected=7)
     get_results("P1", part1, read_lines, "input.txt")
 
-    get_results("P2 Example", part2, read_lines, "example.txt")
+    get_results("P2 Example", part2, read_lines, "example2.txt", expected="co,de,ka,ta")
     get_results("P2", part2, read_lines, "input.txt")
