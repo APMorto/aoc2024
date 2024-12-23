@@ -64,7 +64,6 @@ def part1(lines: List[str]):
                 triplets.add((1 << i1) | (1 << i2) | common)
     return len(triplets)
 
-
 def part2(lines: List[str]):
     edges = read_computer_connections(lines)
     n = len(edges)
@@ -125,12 +124,6 @@ def part2(lines: List[str]):
         best_val = next_val
     out_strings.sort()
     return ",".join(out_strings)
-
-
-
-
-
-
 
 
 if __name__ == '__main__':
