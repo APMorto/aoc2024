@@ -77,34 +77,16 @@ def get_outputs_by_gate(gates: List[str]):
 
 def part2(line_blocks: List[List[str]]):
     initial_values_list, gates = line_blocks
-    outputs = parse_gates(gates)
     #print(format_graph_leetcode_style(outputs))
-    #xy_wires = {f"x{i:02}" for i in range(45)} | {f"y{i:02}" for i in range(45)}
-
-    #def downstream_of(wire) -> set:
-    #    if wire not in outputs:
-    #        return {wire}
-    #    else:
-    #        return downstream_of(outputs[wire][1]) | downstream_of(outputs[wire][2]) | {wire}
-    #for i in range(45):
-    #    num_str = str(i)
-    #    if len(num_str) == 1:
-    #        num_str = "0" + num_str
-    #    z_str = 'z' + num_str
-    #    print(z_str, "downstream", sorted(downstream_of(z_str) & xy_wires - {z_str}, reverse=False))
-
-
-
-    # we add x and y
-    # in a OP b -> out1, c OP d -> out2, that pair of out1 and out2 can be swapped. Four of these pairs exist
 
     outputs_by_gate = get_outputs_by_gate(gates)
-    def outputted_by(t):
+    def outputted_by(t):    # a OP b -> Optional[output]
         in1, op, in2 = t
         assert in1 is not None and in2 is not None, "Input wire is None." + str(t)
         in1, in2 = sorted([in1, in2])
         return outputs_by_gate.get((in1, op, in2), None)
 
+    # Given WIRE OP ?, what (if any) can ? be
     def find_other_input(needed_in, needed_op):
         for in1, op, in2 in outputs_by_gate.keys():
             if op == needed_op:
@@ -116,13 +98,14 @@ def part2(line_blocks: List[List[str]]):
 
     swaps = []
 
-    carry_in = outputs_by_gate[("x00", "AND", "y00")]
+    # We enforce the ripple adder structure, from lowest to highest bits.
+    carry_in = outputs_by_gate[("x00", "AND", "y00")]   # By manual inspection, level 0 is correct.
     for num in range(1, 45):
         x = f"x{num:02}"
         y = f"y{num:02}"
         #print("On ripple adder", num, x, y)
 
-        # These gates MUST exist.
+        # These gates MUST exist. (can't swap literal inputs)
         xANDy_out = outputted_by((x, "AND", y))
         xXORy_out = outputted_by((x, "XOR", y))
 
@@ -146,19 +129,17 @@ def part2(line_blocks: List[List[str]]):
 
             if possible_corrected_carry_in_via_AND is not None:
                 assert possible_corrected_XOR_via_AND is None
-                # Swap carry_in with this value.
-                swaps.append((carry_in, possible_corrected_carry_in_via_AND))
+
+                swaps.append((carry_in, possible_corrected_carry_in_via_AND))   # Swap carry_in with this value.
                 carry_in = possible_corrected_carry_in_via_AND
-                #print("###################Swapping carry.",carry_in, possible_corrected_carry_in_via_AND )
 
             elif possible_corrected_XOR_via_AND is not None:
                 assert possible_corrected_carry_in_via_AND is None
-                # Swap xXORy with this value.
-                swaps.append((xXORy_out, possible_corrected_XOR_via_AND))
-                xXORy_out = possible_corrected_XOR_via_AND
-                #print("##################Swapping xXORy", xXORy_out, possible_corrected_XOR_via_AND)
 
-            # Update those value.
+                swaps.append((xXORy_out, possible_corrected_XOR_via_AND))   # Swap xXORy with this value.
+                xXORy_out = possible_corrected_XOR_via_AND
+
+            # Update those values.
             #possible_out = outputted_by((carry_in, "XOR", xXORy_out))      # Unused. We should check for z, but I didnt need to.
             possible_carry_AND_xor = outputted_by((carry_in, "AND", xXORy_out))
 
@@ -175,14 +156,12 @@ def part2(line_blocks: List[List[str]]):
 
                 swaps.append((xANDy_out, diff_lower_and))   # Swap xANDy_out and this
                 xANDy_out = diff_lower_and
-                #print("#####################Swapping xANDy", xANDy_out, diff_lower_and)
 
             elif diff_higher_and is not None:
                 assert diff_lower_and is None
 
                 swaps.append((possible_carry_AND_xor, diff_higher_and)) # swap possible_carry_AND_xor and this
                 possible_carry_AND_xor = diff_higher_and
-                #print("#####################Swapping xANDy",possible_carry_AND_xor, diff_higher_and)
 
             possible_carry_out = outputted_by((xANDy_out, "OR", possible_carry_AND_xor))
 
@@ -269,5 +248,4 @@ if __name__ == '__main__':
     get_results("P1 Example Larger", part1, read_line_blocks, "example2.txt", expected=2024)
     get_results("P1", part1, read_line_blocks, "input.txt")
 
-    #get_results("P2 Example", part2, read_line_blocks, "example.txt")
     get_results("P2", part2, read_line_blocks, "input.txt")
