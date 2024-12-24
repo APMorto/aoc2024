@@ -26,7 +26,8 @@ import day_19_linen_layout.linen_layout         as day_19
 import day_20_race_condition.race_condition     as day_20
 import day_21_keypad_conundrum.keypad_conundrum as day_21
 import day_22_monkey_market.monkey_market       as day_22
-import day_23_lan_party.lan_party              as day_23
+import day_23_lan_party.lan_party               as day_23
+import day_24_crossed_wires.crossed_wires       as day_24
 
 day_information = {
 # DAY: (p1, p2, input_fn, [input_fn2], "dir")
@@ -53,6 +54,7 @@ day_information = {
     21: (day_21.part1,  day_21.part2,       read_lines,         "day_21_keypad_conundrum"),
     22: (day_22.part1_binary_matrix_operations,  day_22.part2,       read_lines,         "day_22_monkey_market"),
     23: (day_23.part1,  day_23.part2,       read_lines,         "day_23_lan_party"),
+    24: (day_24.part1,  day_24.part2,       read_line_blocks,   "day_24_crossed_wires"),
 
 }
 
