@@ -1,14 +1,13 @@
 import math
 import sys
-import timeit
 from itertools import chain
 from typing import List, Optional
 
-from parser.parser import read_grid, read_list_grid
+from parser.parser import read_list_grid
 from util.directions import Direction2D
-from util.timer import time_with_output, get_results
+from util.timer import get_results
 
-# Gaze upon the massive block of commends below to see the rationale for this.
+# Gaze upon the massive block of comments below to see the rationale for this.
 # Basically, we have a graph.
 # adding an obstacle changes 4 connections in the graph
 # and we have a quick method of checking whether one node is 'after' another node.
@@ -19,10 +18,10 @@ class StateNode:
     next_state_id = 0
 
     def __init__(self, dist: int, child, rootID: int, indexID: int):
-        self.dist: int = dist
+        self.dist: int = dist           # How far from the cycle / leavin the map we are
         self.child: Optional[StateNode] = child
-        self.rootID: int = rootID
-        self.indexID: int = indexID
+        self.rootID: int = rootID       # What part of a cycle we enter / how we leave the map
+        self.indexID: int = indexID     # bits representing whether or not we took each turn (if we go past a stone on the left, we did NOT take the turn)
 
     def other_downstream_of(self, other: "StateNode") -> bool:
         A = self
@@ -31,15 +30,18 @@ class StateNode:
         if A.rootID != B.rootID:
             return B.dist == 0 and StateNode.coflavoured(A.rootID, B.rootID)
 
+        # Euler walks could be used here, as in https://charris.neocities.org/2024-aoc6b
+
         diff = A.dist - B.dist
         if diff < 0:
             return False
         return (A.indexID >> diff) == B.indexID
 
     def cycles(self):
-        assert (self.rootID in StateNode.cocyclic_root_ids) ^ (self.rootID in StateNode.OOB_root_ids), f"{self.rootID in StateNode.cocyclic_root_ids}, {self.rootID in StateNode.OOB_root_ids}"
+        #assert (self.rootID in StateNode.cocyclic_root_ids) ^ (self.rootID in StateNode.OOB_root_ids), f"{self.rootID in StateNode.cocyclic_root_ids}, {self.rootID in StateNode.OOB_root_ids}"
         return self.rootID in StateNode.cocyclic_root_ids
 
+    # I think by coflavoured, past me meant that both nodes would lead to the same cycle / leave the map on the same path.
     @staticmethod
     def coflavoured(id1, id2):
         return id1 in StateNode.cocyclic_root_ids and id2 in StateNode.cocyclic_root_ids[id1]
@@ -73,7 +75,6 @@ def part2_graph(grid: List[str]):
         """For our branching logic, we need to know this, as had we approached from the right, we would have turned right."""
         ro, co = d.turn_left().offset()
         return (0 <= r + ro < h and 0 <= c + co < w) and grid[r + ro][c + co] == '#'
-
 
     def fill_cycle(r: int, c: int, d: Direction2D):
         """Upon hitting a cycle, we then fill it in with the special final state."""
