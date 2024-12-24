@@ -177,6 +177,17 @@ def part2(line_blocks: List[List[str]]):
 
 # We have 222 output wires.
 # To check all pairs, we have 222 Choose 8 / 2^4, or like (222*221/2)(220)... so like something E 15, too big
+# => Checking all pairs is ostensibly computationally infeasible
+
+# By manual input inspection, (and gate counting) this is a pretty bog standard ripple adder.
+# => We go lower to higher bits, updating our structure.
+# The only thing we really carry over from previous layers is the carry bit (which can be wrong)
+# So, just assume that we only have 1 thing wrong per gate (as otherwise this would be complicated)
+
+# If we don't utilize the underlying ripple adder structure, this is a VERY complicated problem (to make fast)
+# (In general you can brute force by just checking all swap pairs and then verifying correctness, too slow)
+# Below are my messy notes working through the problem.
+
 
 # So, we know what the z wires outputs should look like as logical expressions of the inputs
 # If the logic is equivalent, we are good.
