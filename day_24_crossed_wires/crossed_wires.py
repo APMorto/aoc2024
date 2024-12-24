@@ -4,10 +4,9 @@ from itertools import chain
 from util.timer import get_results
 from parser.parser import read_lines, read_line, read_grid, read_list_grid, read_line_blocks
 from typing import List, Dict, Tuple, Optional
-import re
 
 # It seems we are defining a binary tree with operator internal node and initial operand leaf nodes
-# Kind of. Subtrees can be duplicated (one output can be connected to many inputs)
+# Kind of. Subtrees can be duplicated (one output can be connectesd to many inputs)
 
 def parse_gates(gates: List[str]) -> Dict[str, Tuple[str, str, str]]:
     outputs = {}
@@ -80,27 +79,24 @@ def part2(line_blocks: List[List[str]]):
     initial_values_list, gates = line_blocks
     outputs = parse_gates(gates)
     #print(format_graph_leetcode_style(outputs))
-    #initial_values = parse_initial_values(initial_values_list)
-    xy_wires = {f"x{i:02}" for i in range(45)} | {f"y{i:02}" for i in range(45)}
+    #xy_wires = {f"x{i:02}" for i in range(45)} | {f"y{i:02}" for i in range(45)}
 
-    def downstream_of(wire) -> set:
-        if wire not in outputs:
-            return {wire}
-        else:
-            return downstream_of(outputs[wire][1]) | downstream_of(outputs[wire][2]) | {wire}
-
-    for i in range(45):
-        num_str = str(i)
-        if len(num_str) == 1:
-            num_str = "0" + num_str
-        z_str = 'z' + num_str
-        print(z_str, "downstream", sorted(downstream_of(z_str) & xy_wires - {z_str}, reverse=False))
+    #def downstream_of(wire) -> set:
+    #    if wire not in outputs:
+    #        return {wire}
+    #    else:
+    #        return downstream_of(outputs[wire][1]) | downstream_of(outputs[wire][2]) | {wire}
+    #for i in range(45):
+    #    num_str = str(i)
+    #    if len(num_str) == 1:
+    #        num_str = "0" + num_str
+    #    z_str = 'z' + num_str
+    #    print(z_str, "downstream", sorted(downstream_of(z_str) & xy_wires - {z_str}, reverse=False))
 
 
 
     # we add x and y
     # in a OP b -> out1, c OP d -> out2, that pair of out1 and out2 can be swapped. Four of these pairs exist
-    print(len(outputs))
 
     outputs_by_gate = get_outputs_by_gate(gates)
     def outputted_by(t):
@@ -124,14 +120,11 @@ def part2(line_blocks: List[List[str]]):
     for num in range(1, 45):
         x = f"x{num:02}"
         y = f"y{num:02}"
-        print("On ripple adder", num, x, y)
-
+        #print("On ripple adder", num, x, y)
 
         # These gates MUST exist.
         xANDy_out = outputted_by((x, "AND", y))
         xXORy_out = outputted_by((x, "XOR", y))
-        print("xANDy_out", xANDy_out)
-        print("xXORy_out", xXORy_out)
 
         possible_out: Optional[str] = outputted_by((carry_in, "XOR", xXORy_out))
         possible_carry_AND_xor = outputted_by((carry_in, "AND", xXORy_out))
@@ -149,25 +142,24 @@ def part2(line_blocks: List[List[str]]):
             possible_corrected_XOR_via_XOR = find_other_input(carry_in, "XOR")
             assert possible_corrected_XOR_via_AND == possible_corrected_XOR_via_XOR
 
-            print(possible_corrected_carry_in_via_AND, possible_corrected_XOR_via_AND)
             assert possible_corrected_carry_in_via_AND is not None or possible_corrected_XOR_via_AND is not None
 
             if possible_corrected_carry_in_via_AND is not None:
                 assert possible_corrected_XOR_via_AND is None
                 # Swap carry_in with this value.
                 swaps.append((carry_in, possible_corrected_carry_in_via_AND))
-                print("###################Swapping carry.",carry_in, possible_corrected_carry_in_via_AND )
                 carry_in = possible_corrected_carry_in_via_AND
+                #print("###################Swapping carry.",carry_in, possible_corrected_carry_in_via_AND )
 
             elif possible_corrected_XOR_via_AND is not None:
                 assert possible_corrected_carry_in_via_AND is None
                 # Swap xXORy with this value.
                 swaps.append((xXORy_out, possible_corrected_XOR_via_AND))
-                print("##################Swapping xXORy", xXORy_out, possible_corrected_XOR_via_AND)
                 xXORy_out = possible_corrected_XOR_via_AND
+                #print("##################Swapping xXORy", xXORy_out, possible_corrected_XOR_via_AND)
 
             # Update those value.
-            possible_out = outputted_by((carry_in, "XOR", xXORy_out))
+            #possible_out = outputted_by((carry_in, "XOR", xXORy_out))      # Unused. We should check for z, but I didnt need to.
             possible_carry_AND_xor = outputted_by((carry_in, "AND", xXORy_out))
 
 
@@ -180,31 +172,26 @@ def part2(line_blocks: List[List[str]]):
 
             if diff_lower_and is not None:
                 assert diff_higher_and is None
-                # Swap xANDy_out and this
-                swaps.append((xANDy_out, diff_lower_and))
-                print("#####################Swapping xANDy", xANDy_out, diff_lower_and)
+
+                swaps.append((xANDy_out, diff_lower_and))   # Swap xANDy_out and this
                 xANDy_out = diff_lower_and
+                #print("#####################Swapping xANDy", xANDy_out, diff_lower_and)
 
             elif diff_higher_and is not None:
                 assert diff_lower_and is None
-                # swap possible_carry_AND_xor and this
-                swaps.append((possible_carry_AND_xor, diff_higher_and))
-                print("#####################Swapping xANDy",possible_carry_AND_xor, diff_higher_and)
+
+                swaps.append((possible_carry_AND_xor, diff_higher_and)) # swap possible_carry_AND_xor and this
                 possible_carry_AND_xor = diff_higher_and
+                #print("#####################Swapping xANDy",possible_carry_AND_xor, diff_higher_and)
 
             possible_carry_out = outputted_by((xANDy_out, "OR", possible_carry_AND_xor))
-
 
         # Update carry.
         carry_in = possible_carry_out
 
 
-    # Remove duplicates.
+    # Remove duplicates. Because if we swap one thing, we will just end up swapping it again.
     non_duplicate_swaps = set(tuple(sorted(t)) for t in swaps)
-
-    print("SWAPS", swaps)
-    print(len(swaps))
-
     return ",".join(sorted(chain(*non_duplicate_swaps)))
 
 
@@ -275,21 +262,6 @@ def part2(line_blocks: List[List[str]]):
 
 # z39 is wrong.
 # z32 is wrong. (AND)
-
-
-"""        
-        # While is may be possible to have some FUNKY stuff with multiple wrong wires, Eric wouldn't do that, would he?
-        if possible_carry_out is None and possible_carry_AND_xor is not None:
-            # xXORy is wrong.
-            pass
-    
-        elif possible_carry_out is not None and possible_carry_AND_xor is None:
-            # carry_in is wrong.
-            pass
-    
-        elif possible_carry_out is None and possible_carry_AND_xor is None:
-            # """
-
 
 
 if __name__ == '__main__':
