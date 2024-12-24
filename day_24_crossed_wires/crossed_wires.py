@@ -140,9 +140,12 @@ def part2(line_blocks: List[List[str]]):
                 xXORy_out = possible_corrected_XOR_via_AND
 
             # Update those values.
-            #possible_out = outputted_by((carry_in, "XOR", xXORy_out))      # Unused. We should check for z, but I didnt need to.
+            possible_out = outputted_by((carry_in, "XOR", xXORy_out))      # In my original solution this was unused.
             possible_carry_AND_xor = outputted_by((carry_in, "AND", xXORy_out))
 
+        # Check if the output is wrong.
+        if possible_out != (z := f"z{num:02}"):
+            swaps.append((possible_out, z))
 
         # If Either of the above are wrong, this will fail.
         possible_carry_out = outputted_by((xANDy_out, "OR", possible_carry_AND_xor))
@@ -259,4 +262,4 @@ if __name__ == '__main__':
     get_results("P1 Example Larger", part1, read_line_blocks, "example2.txt", expected=2024)
     get_results("P1", part1, read_line_blocks, "input.txt")
 
-    get_results("P2", part2, read_line_blocks, "input.txt")
+    get_results("P2", part2, read_line_blocks, "input.txt", expected="ggn,grm,jcb,ndw,twr,z10,z32,z39")
