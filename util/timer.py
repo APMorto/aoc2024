@@ -20,7 +20,7 @@ def get_results(name, solution, parse_fn, fp, **kwargs):
     res, elapsed = time_with_output(lambda: solution(input))
 
     if kwargs.get("dense", False):
-        print(f"{name}: {res : >14}, Ex: {elapsed:.3f}s, Prs: {parse_time:.4f}s")
+        print(f"{name}: {str(res) : >14}, Ex: {elapsed:.3f}s, Prs: {parse_time:.4f}s")
     else:
         print(f"{name}:")
         if "expected" in kwargs and kwargs["expected"] != res:

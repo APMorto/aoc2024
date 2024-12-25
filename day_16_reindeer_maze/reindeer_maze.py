@@ -12,6 +12,9 @@ from util.datastructures import MutableMinHeap
 
 from day_16_reindeer_maze.marco_del_mastro_solution import part1_marco_del_maestro
 
+def part1_and_2(grid_list):
+    return part2(grid_list, return_best_path=True)
+
 # A* for this is like, BARELY any better.
 def part1(grid_list):
     grid = Grid2DDense(grid_list)
@@ -95,7 +98,7 @@ def part1_mutable_minheap(grid_list):
     return math.inf
 
 
-def part2(grid_list):
+def part2(grid_list, return_best_path=False):
     # Which tiles are part of ANY best path?
     # we could do one forward and one reverse path
     # and then any states which have sum of cost from + to being best is ok
@@ -175,6 +178,8 @@ def part2(grid_list):
             best_seen_reverse[(pos, right)] = cost+1000
             heapq.heappush(heap, (cost+1000, pos, right))
 
+    if return_best_path:
+        return best_path_cost, len(best_positions)
     return len(best_positions)
 
 
