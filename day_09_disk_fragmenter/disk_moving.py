@@ -2,6 +2,7 @@ from sortedcontainers import SortedList
 
 from util.timer import get_results
 from parser.parser import read_line
+from heapq import heappush, heappop
 
 # from right to left
 # move each disk to the leftmost free space
@@ -69,7 +70,8 @@ def part2(line: str):
     nums = list(map(int, line))
 
     # A quickly insertible and min-queriable list of positions for each free size
-    available_blocks_of_size = [SortedList() for _ in range(10)]  # [0] == [] should always hold
+    #available_blocks_of_size = [SortedList() for _ in range(10)]  # [0] == [] should always hold
+    available_blocks_of_size = [[] for _ in range(10)]  # MinHeap from heapq is faster. 0.025s -> 0.02s
     initial_block_positions = []    # (id, pos, size)
 
     # Initialize available blocks and initial positions
@@ -79,7 +81,8 @@ def part2(line: str):
             initial_block_positions.append((i // 2, j, num))
         else:
             if num > 0:
-                available_blocks_of_size[num].add(j)
+                #available_blocks_of_size[num].add(j)
+                heappush(available_blocks_of_size[num], j)
         j += num
 
     out = 0
@@ -98,12 +101,14 @@ def part2(line: str):
 
         # Move the file if we can
         if dest < pos:
-            available_blocks_of_size[chosen_size].pop(0)
+            #available_blocks_of_size[chosen_size].pop(0)
+            heappop(available_blocks_of_size[chosen_size])
 
             # Put the remaining space back in. This is why we have the fancy ordered lists.
             remaining_size = chosen_size - size
             if remaining_size > 0:
-                available_blocks_of_size[remaining_size].add(dest + size)
+                #available_blocks_of_size[remaining_size].add(dest + size)
+                heappush(available_blocks_of_size[remaining_size], dest + size)
 
             # We do NOT need to free up where we were, as that's right of what matters.
 
@@ -123,4 +128,4 @@ if __name__ == '__main__':
     get_results("P1", part1, read_line, "input.txt")
 
     get_results("P2 Example", part2, read_line, "example.txt")
-    get_results("P2", part2, read_line, "input.txt")
+    get_results("P2", part2, read_line, "input.txt", expected=6511178035564)

@@ -6,7 +6,7 @@ Day 2 is frankly slow, like no way this shit takes ~0.04s                       
                                                                                         Saved ~0.035s
 While I like the code for day 4 part 1, its not fast. I bet I could 0.034 -> 0.01        [0.02] DONE
                                                                                         Saved ~0.02s
-While day 5 is not slow, I know I can make it faster.
+While day 5 is not slow, I know I can make it faster.                                   Done. Saved like 0.03s
 While I could maybe improve day 6 part 2, its my baby. Im not changing it.
 For day 7, I could maybe inline the operations? Nah, just slough, which would be ugly AF.
 Day 10 part 1 is kinda slow at 0.111s. Given that we propagate a distance of <=10
