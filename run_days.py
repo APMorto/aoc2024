@@ -33,7 +33,8 @@ import day_25_code_chronicle.code_chronicle     as day_25
 day_information = {
 # DAY: (p1, p2, input_fn, [input_fn2], "dir")
     1: (day_01.part1,   day_01.part2,       read_lines,         "day_01_historian_hysteria"),
-    2: (day_02.part1,   day_02.part2,       read_lines,         "day_02_red_nosed_reports"),
+    2: (day_02.both_parts, day_02.both_parts, read_lines,       "day_02_red_nosed_reports"),
+    #2: (day_02.part1,   day_02.part2,       read_lines,         "day_02_red_nosed_reports"),
     3: (day_03.part1,   day_03.part2,       read_lines,         "day_03_mull_it_over"),
     4: (day_04.part1,   day_04.part2,       read_grid,          "day_04_ceres_search"),
     5: (day_05.part1,   day_05.part2,       read_line_blocks,   "day_05_print_queue"),

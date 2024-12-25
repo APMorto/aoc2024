@@ -2,7 +2,8 @@ In general, moving from a list of fixed size to array.array could be a bit of sp
 For day 16, I could combine both parts into one, saving like 0.12s.                     [0.12] DONE
 For day 20, the inline solution is faster than the sliding window. (0.12 < 0.33)        [0.2] DONE
     What could be even faster is setting up the things in cells, not sure.
-Day 2 is frankly slow, like no way this shit takes ~0.04s                               [0.04]
+Day 2 is frankly slow, like no way this shit takes ~0.04s                               [0.04] DONE
+                                                                                        Saved ~0.035s
 While I like the code for day 4 part 1, its not fast. I bet I could 0.034 -> 0.1        [0.02]
 While I could maybe improve day 6 part 2, its my baby. Im not changing it.
 For day 7, I could maybe inline the operations? Nah, just slough, which would be ugly AF.
