@@ -1,4 +1,5 @@
 import math
+from array import array
 from collections import defaultdict
 
 import numpy as np
@@ -54,6 +55,50 @@ def kth_secret_number(initial_secret_number: int, k: int) -> int:
         cur = (cur ^ (cur >> 5)) & PRUNE_MASK
         cur = (cur ^ (cur << 11)) & PRUNE_MASK
     return cur
+
+# Inspiration from https://old.reddit.com/r/adventofcode/comments/1hjroap/2024_day_22_solutions/m3915dk/
+# https://github.com/mkern75/AdventOfCodePython/blob/main/year2024/Day22.py
+# It was fast and used arrays.
+def part2_array(lines: List[str]):
+    PRUNE_MASK = (1 << 24) - 1  # 0b[1]^24
+    SEQUENCE_MOD = 19 ** 4  # I don't know why everybody uses 20 instead of 19.
+
+    # TIL about array.array in python. Faster than lists!
+    counts = array('H', [0] * SEQUENCE_MOD) # 'H' = unsigned short.
+    # Now, allocating big arrays is slow! And resetting them also seems cumbersome, so I just remember the last one.
+    # Functions identically to a boolean array that we just reset a bunch
+    last_sold = array('H', [0] * SEQUENCE_MOD)
+    for line_number, line in enumerate(lines):
+        cur = int(line)
+        sequence_integer = 0
+
+        # Initialize sequence with first four changes.
+        prev = cur % 10
+        for i in range(3):
+            cur = (cur ^ (cur << 6)) & PRUNE_MASK  # We iteratively mix and prune it.
+            cur = (cur ^ (cur >> 5)) # & PRUNE_MASK
+            cur = (cur ^ (cur << 11)) & PRUNE_MASK
+            cur_price = (cur % 10)
+            change = cur_price - prev + 10 # Change in range [0..18]
+            sequence_integer = (sequence_integer * 19 + change) % SEQUENCE_MOD
+            prev = cur_price
+
+        for k in range(3, 2000):
+            # Takes like 0.06s
+            cur = (cur ^ (cur << 6)) & PRUNE_MASK  # We iteratively mix and prune it.
+            cur = (cur ^ (cur >> 5)) # & PRUNE_MASK # No need to prune.
+            cur = (cur ^ (cur << 11)) & PRUNE_MASK
+
+            cur_price = (cur % 10)
+            change = cur_price - prev + 10  # Change in range [0..18]
+            sequence_integer = (sequence_integer * 19 + change) % SEQUENCE_MOD
+            prev = cur_price
+
+            if last_sold[sequence_integer] < line_number:
+                counts[sequence_integer] += cur_price
+                last_sold[sequence_integer] = line_number
+
+    return max(counts)
 
 
 # Nothing special for part 2, as we actually need to see the intermediate values.
@@ -199,3 +244,4 @@ if __name__ == '__main__':
 
     get_results("P2 Example", part2, read_lines, "example2.txt", expected=23)
     get_results("P2", part2, read_lines, "input.txt", expected=2423)
+    get_results("P2 Array", part2_array, read_lines, "input.txt", expected=2423)

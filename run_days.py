@@ -52,7 +52,7 @@ day_information = {
     19: (day_19.part1,  day_19.part2,       read_line_blocks,   "day_19_linen_layout"),
     20: (day_20.part1,  day_20.part2_sliding_window, read_grid, "day_20_race_condition"),
     21: (day_21.part1,  day_21.part2,       read_lines,         "day_21_keypad_conundrum"),
-    22: (day_22.part1_binary_matrix_operations,  day_22.part2,       read_lines,         "day_22_monkey_market"),
+    22: (day_22.part1_binary_matrix_operations,  day_22.part2_array,       read_lines,         "day_22_monkey_market"),
     23: (day_23.part1,  day_23.part2,       read_lines,         "day_23_lan_party"),
     24: (day_24.part1,  day_24.part2,       read_line_blocks,   "day_24_crossed_wires"),
 
