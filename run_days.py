@@ -51,7 +51,8 @@ day_information = {
     17: (day_17.part1,  day_17.part2,       read_line_blocks,   "day_17_chronospatial_computer"),
     18: (day_18.part1,  day_18.part2,       read_lines,         "day_18_ram_run"),
     19: (day_19.part1,  day_19.part2,       read_line_blocks,   "day_19_linen_layout"),
-    20: (day_20.part1,  day_20.part2_sliding_window, read_grid, "day_20_race_condition"),
+    20: (day_20.part1,  day_20.part2_inline, read_grid,         "day_20_race_condition"),   # inline is faster than sliding window in pypy
+    #20: (day_20.part1,  day_20.part2_sliding_window, read_grid, "day_20_race_condition"),
     21: (day_21.part1,  day_21.part2,       read_lines,         "day_21_keypad_conundrum"),
     22: (day_22.part1_binary_matrix_operations,  day_22.part2_array,       read_lines,         "day_22_monkey_market"),
     23: (day_23.part1,  day_23.part2,       read_lines,         "day_23_lan_party"),

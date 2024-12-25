@@ -13,3 +13,5 @@ Day 10 part 1 is kinda slow at 0.111s. Given that we propagate a distance of <=1
     Given the propagation limit, we can even have some overlap in bits, provided they are
     >= 20 manhatten distance apart!
 Day 12 can maybe be improved? It takes a long time becase its grid.
+day 20 stuff https://www.reddit.com/r/adventofcode/comments/1hj0clt/comment/m33beqp/
+
