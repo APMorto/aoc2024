@@ -68,7 +68,7 @@ def part2_array(lines: List[str]):
     # Now, allocating big arrays is slow! And resetting them also seems cumbersome, so I just remember the last one.
     # Functions identically to a boolean array that we just reset a bunch
     last_sold = array('H', [0] * SEQUENCE_MOD)
-    for line_number, line in enumerate(lines):
+    for line_number, line in enumerate(lines, start=1): # Must start at 0, otherwise first line is completely ignored.
         cur = int(line)
         sequence_integer = 0
 
