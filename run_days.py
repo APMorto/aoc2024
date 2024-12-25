@@ -82,8 +82,14 @@ if __name__ == "__main__":
             raise Exception("Expected 4 or 5 elements in day, not " + str(len(t)))
 
         file = os.path.join(folder, "input.txt")
-        res1, time1, parse_time1 = get_results(f"Day {day} P1", p1, parse1, file, dense=True)
-        res2, time2, parse_time2 = get_results(f"Day {day} P2", p2, parse2, file, dense=True)
+        if p1 is p2:
+            (res1, res2), time_b, parse_time_b = get_results(f"Day {day} P1&P1", p1, parse1, file, dense=True)
+            # Uniformly distribute for now.
+            time1 = time2 = time_b / 2
+            parse_time1 = parse_time2 = parse_time_b / 2
+        else:
+            res1, time1, parse_time1 = get_results(f"Day {day} P1", p1, parse1, file, dense=True)
+            res2, time2, parse_time2 = get_results(f"Day {day} P2", p2, parse2, file, dense=True)
         print()
 
         p1_results.append(res1)
