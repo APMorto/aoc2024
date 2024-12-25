@@ -26,32 +26,27 @@ def read_schematic(schematic: List[str]) -> Tuple[bool, tuple]:
 def part1(line_blocks: List[List[str]]):
     keys = []
     locks = []
-    keys.sort()#key=lambda code: code)
     for schematic in line_blocks:
         is_key, code = read_schematic(schematic)
-        #print(schematic)
-        #print(is_key, code)
         if is_key:
             keys.append(code)
         else:
             locks.append(code)
+    # The whole sorting and cutting early barely saves ANYTHING, like 1ms at most.
+    keys.sort()#key=lambda code: code[0])
 
     out = 0
     for lock in locks:
         for key in keys:    # Keys are filled from the bottom.
-            #if key[0] >= lock[0]:    # Sorted by first value.
-            #    break
+            if key[0] > lock[0]:    # Sorted by first value.
+                break
             fits = True
-            for c in range(0, 5):
+            for c in range(1, 5):
                 if key[c] > lock[c]:
                     fits = False
             if fits:
                 out += 1
     return out
-
-    #return sum(key_amt * lock_counter[code] for code, key_amt in key_counter.items())
-
-# 183 too low.
 
 def part2(_):
     pass
@@ -59,7 +54,7 @@ def part2(_):
 
 if __name__ == '__main__':
     get_results("P1 Example", part1, read_line_blocks, "example.txt", expected=3)
-    get_results("P1", part1, read_line_blocks, "input.txt")
+    get_results("P1", part1, read_line_blocks, "input.txt", expected=3360)
 
     get_results("P2 Example", part2, read_line_blocks, "example.txt")
     get_results("P2", part2, read_line_blocks, "input.txt")
