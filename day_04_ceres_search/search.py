@@ -1,3 +1,5 @@
+from typing import List
+
 from parser.parser import read_grid
 from util.timer import get_results
 
@@ -27,6 +29,34 @@ def part1(grid):
                 out += 1
 
     return out
+
+# 0.013 vs 0.033 for above (pypy)
+def part1_faster(grid: List[str]):
+    h = len(grid)
+    w = len(grid[0])
+
+    out = 0
+    for r in range(h):
+        for c in range(w):
+            if grid[r][c] == 'X':
+                if c >= 3 and grid[r][c-3:c] == "SAM":   # <-
+                    out += 1
+                if c + 4 <= w and grid[r][c+1:c+4] == "MAS": # ->
+                    out += 1
+                if r >= 3 and grid[r-1][c] == 'M' and grid[r-2][c] == 'A' and grid[r-3][c] == 'S':  # ^
+                    out += 1
+                if r + 4 <= h and grid[r+1][c] == 'M' and grid[r+2][c] == 'A' and grid[r+3][c] == 'S': # v
+                    out += 1
+                if r + 4 <= h and c + 4 <= w and grid[r+1][c+1] == 'M' and grid[r+2][c+2] == 'A' and grid[r+3][c+3] == 'S': # down right
+                    out += 1
+                if r + 4 <= h and c >= 3 and grid[r+1][c-1] == 'M' and grid[r+2][c-2] == 'A' and grid[r+3][c-3] == 'S': # down left
+                    out += 1
+                if r >= 3 and c + 4 <= w and grid[r-1][c+1] == 'M' and grid[r-2][c+2] == 'A' and grid[r-3][c+3] == 'S':  # up right
+                    out += 1
+                if r >= 3 and c >= 3 and grid[r-1][c-1] == 'M' and grid[r-2][c-2] == 'A' and grid[r-3][c-3] == 'S': # up left
+                    out += 1
+    return out
+
 
 def part2(grid):
     h = len(grid)
@@ -70,6 +100,7 @@ def part2(grid):
 if __name__ == "__main__":
     get_results("P1 Example", part1, read_grid, "example.txt")
     get_results("P1", part1, read_grid, "input.txt")
+    get_results("P1 Faster", part1_faster, read_grid, "input.txt")
 
     get_results("P2 Example", part2, read_grid, "example.txt")
     get_results("P2", part2, read_grid, "input.txt")
