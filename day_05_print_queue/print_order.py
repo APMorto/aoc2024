@@ -111,12 +111,61 @@ def part2(line_blocks):
     out = 0
 
     for order in read_orderings(list_strings):
-        if (len(order) != len(set(order))):
-            print("abdfabljf")
+        #if (len(order) != len(set(order))):
+        #    print("abdfabljf")
         if not is_valid_p1(order, successors):
             out += order_numbers(order, successors)[len(order)//2]
 
     return out
+
+def midpoint_of_numbers(ordering, successors: Dict[int, Collection[int]]):
+    n = len(ordering)
+    mid_point = n // 2
+    order_set = set(ordering)
+    precede_counts = {a: 0 for a in ordering}
+
+    # Count amount that precede it
+    for a in ordering:
+        for b in successors[a]:
+            if b in order_set:
+                precede_counts[b] += 1
+
+    # Repeatedly get the zero element
+    chosen = None
+    for val, count in precede_counts.items():
+        if count == 0:
+            chosen = val
+            break
+    for i in range(len(ordering)):
+        if i == mid_point:
+            return chosen
+
+        #del precede_counts[chosen]
+        for b in successors[chosen]:
+            if b in order_set:
+                precede_counts[b] -= 1
+
+                # Avoid searching the entire set when we can easily find it.
+                if precede_counts[b] == 0:
+                    chosen = b
+
+def both_parts_faster(line_blocks: List[List[str]]):
+    rule_strings, list_strings = line_blocks
+
+    # So, Something is only incorrect if a precedes b, and there is rule b|a
+    successors = defaultdict(set)
+    for a, b in read_rules(rule_strings):
+        successors[a].add(b)
+
+    out1 = 0
+    out2 = 0
+    for order in read_orderings(list_strings):
+        if is_valid_p1(order, successors):
+            out1 += order[len(order) // 2]
+        else:
+            out2 += midpoint_of_numbers(order, successors)
+
+    return out1, out2
 
 if __name__ == '__main__':
     get_results("P1 Example", part1, read_line_blocks, "example.txt")
@@ -124,3 +173,5 @@ if __name__ == '__main__':
 
     get_results("P2 Example", part2, read_line_blocks, "example.txt")
     get_results("P2", part2, read_line_blocks, "input.txt")
+
+    get_results("Both parts Faster", both_parts_faster, read_line_blocks, "input.txt", expected=(6034, 6305))
