@@ -60,6 +60,10 @@ class DisJointSets():
     def componentSize(self, i):
         return self._ranks[self.find(i)]
 
+    def compressAll(self):
+        for i in range(len(self._parents)):
+            self.find(i)
+
 
 class MutableMinHeap:
     def __init__(self):

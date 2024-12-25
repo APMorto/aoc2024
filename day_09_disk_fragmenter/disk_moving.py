@@ -1,5 +1,4 @@
-from sortedcontainers import SortedList
-
+#from sortedcontainers import SortedList
 from util.timer import get_results
 from parser.parser import read_line
 from heapq import heappush, heappop
