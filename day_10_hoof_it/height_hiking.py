@@ -1,3 +1,4 @@
+from math import ceil
 from typing import List
 import numpy as np
 
@@ -19,9 +20,50 @@ from util.timer import get_results
 # So, we could do the same approach to a 19x19 squared centered on the point
 # Or, just do bitsets to represent where we came from
 # bits can be reused, provided they are based >= 20 manhatten distance apart.
-# At 201 zeros, we can MAYBE achieve this.
+# At 201 zeros, we can MAYBE achieve this. Only 157 9s though, so that should be easier.
 # But at 44x44, the square approach kinda sucks.
 # We could also just like, not bother with the optimal packing and just do it 4x64 bit / 2x128 bit (if available) or even just 256 bit.
+
+def part1_bitwise(grid: List[str]):
+    h = len(grid)
+    w = len(grid[0])
+
+    heights = [list(map(int, line)) for line in grid]
+    heights_arr = np.array(heights)
+
+    # num_masks[height][r, c] = 1 if heights[r, c] == height else 0
+    num_masks = [np.zeros((h, w), dtype=bool) for _ in range(10)]
+    for i in range(10):
+        num_masks[i] |= heights_arr == i
+    out = 0
+
+    # We can only go up to 64 bits per integer.
+    NUM_BITS = 64
+
+    # Each ending position is represented by some bit index number. It is crucial that these never overlap.
+    # For a quick check, they wont ever overlap if their manhatten distance is >= 20, as they can only propagate so far.
+    # I don't do that because its possible doing that semi optimally would take longer. For a larger grid, it would make sense.
+    nine_rows, nine_cols = np.where(num_masks[9])
+    num_9s = len(nine_rows)
+    for block in range(ceil(num_9s / NUM_BITS)):
+        # Set each of up to 64 9s to their own bit index.
+        start_array = np.zeros((h, w), dtype=np.uint64)
+        block_length = min(64, num_9s - block * NUM_BITS)
+        start_array[nine_rows[block*NUM_BITS : (block+1)*NUM_BITS], nine_cols[block*NUM_BITS : (block+1)*NUM_BITS]] = 1 << np.arange(block_length)
+        cur = start_array
+
+        # Bitwise OR all adjacent ones together, then mask with the next level.
+        for i in range(8, -1, -1):
+            new = np.zeros((h, w), dtype=np.uint64)
+            new[:-1]    |= cur[1:]
+            new[1:]     |= cur[:-1]
+            new[:, :-1] |= cur[:, 1:]
+            new[:, 1:]  |= cur[:, :-1]
+            new *= num_masks[i]
+            cur = new
+        # https://stackoverflow.com/questions/63954102/numpy-vectorized-way-to-count-non-zero-bits-in-array-of-integers
+        out += np.unpackbits(cur.view('uint8')).sum()   # Total number of 1 bits (on 0s)
+    return out
 
 def num_9s_accessible(r, c, num_masks: List[np.ndarray]):
     h, w = num_masks[0].shape
@@ -123,6 +165,7 @@ if __name__ == '__main__':
     get_results("P1 Example", part1, read_grid, "example.txt")
     get_results("P1 Example 2", part1, read_grid, "example2.txt")
     get_results("P1", part1, read_grid, "input.txt")
+    get_results("P1 Bitwise", part1_bitwise, read_grid, "input.txt")
 
     get_results("P2 Example", part2, read_grid, "example.txt")
     get_results("P2 Example 2", part2, read_grid, "example2.txt")

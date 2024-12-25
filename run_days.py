@@ -41,7 +41,8 @@ day_information = {
     7: (day_07.part1,   day_07.part2, day_07.read_equations,    "day_07_bridge_repair"),
     8: (day_08.part1,   day_08.part2,       read_grid,          "day_08_resonant_collinearity"),
     9: (day_09.part1,   day_09.part2,       read_line,          "day_09_disk_fragmenter"),
-    10: (day_10.part1,  day_10.part2,       read_grid,          "day_10_hoof_it"),
+    10: (day_10.part1_bitwise,  day_10.part2,       read_grid,          "day_10_hoof_it"),  # p1 bitwise ~2ms from 100ms
+    #10: (day_10.part1,  day_10.part2,       read_grid,          "day_10_hoof_it"),
     11: (day_11.part1,  day_11.part2,       read_line,          "day_11_plutonian_pebbles"),
     12: (day_12.part1,  day_12.part2,       read_grid,          "day_12_garden_groups"),
     13: (day_13.part1,  day_13.part2,       read_line_blocks,   "day_13_claw_contraption"),
