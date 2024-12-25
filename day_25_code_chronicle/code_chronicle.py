@@ -7,6 +7,8 @@ from typing import List, Tuple
 
 # Keys are filled at the top, schematics are filled at the bottom
 # Just find the ones that fit together, pretty easy.
+# We need non overlapping, not all that perfectly fit...
+# And there are 500
 
 def read_schematic(schematic: List[str]) -> Tuple[bool, tuple]:
     fill = schematic[0][0]  # '.' for key, '#' for lock
@@ -18,23 +20,38 @@ def read_schematic(schematic: List[str]) -> Tuple[bool, tuple]:
                 h = r
                 break
         code[c] = h
-    return fill == '.', tuple(code)
+    return fill == '#', tuple(code)
 
 
 def part1(line_blocks: List[List[str]]):
-    key_counter = defaultdict(int)
-    lock_counter = defaultdict(int)
+    keys = []
+    locks = []
+    keys.sort()#key=lambda code: code)
     for schematic in line_blocks:
         is_key, code = read_schematic(schematic)
-        print(schematic)
-        print(is_key, code)
+        #print(schematic)
+        #print(is_key, code)
         if is_key:
-            key_counter[code] += 1
+            keys.append(code)
         else:
-            lock_counter[code] += 1
-    return sum(key_amt * lock_counter[code] for code, key_amt in key_counter.items())
+            locks.append(code)
 
+    out = 0
+    for lock in locks:
+        for key in keys:    # Keys are filled from the bottom.
+            #if key[0] >= lock[0]:    # Sorted by first value.
+            #    break
+            fits = True
+            for c in range(0, 5):
+                if key[c] > lock[c]:
+                    fits = False
+            if fits:
+                out += 1
+    return out
 
+    #return sum(key_amt * lock_counter[code] for code, key_amt in key_counter.items())
+
+# 183 too low.
 
 def part2(_):
     pass
