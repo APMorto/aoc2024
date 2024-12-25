@@ -14,11 +14,19 @@ from util.timer import get_results
 # The trailheads score is the number of 9 height positions available
 # Sum of scores of all trailheads
 
+# Lets speed up part 1. 0.111s is pathetic.
+# A path has a manhatten distance <= 9
+# So, we could do the same approach to a 19x19 squared centered on the point
+# Or, just do bitsets to represent where we came from
+# bits can be reused, provided they are based >= 20 manhatten distance apart.
+# At 201 zeros, we can MAYBE achieve this.
+# But at 44x44, the square approach kinda sucks.
+# We could also just like, not bother with the optimal packing and just do it 4x64 bit / 2x128 bit (if available) or even just 256 bit.
+
 def num_9s_accessible(r, c, num_masks: List[np.ndarray]):
     h, w = num_masks[0].shape
     cur = np.zeros((h, w), dtype=bool)
     cur[r][c] = True
-
 
     for i in range(1, 10):
         new = np.zeros((h, w), dtype=bool)

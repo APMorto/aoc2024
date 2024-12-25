@@ -1,0 +1,15 @@
+In general, moving from a list of fixed size to array.array could be a bit of speedup.
+For day 16, I could combine both parts into one, saving like 0.12s.                     [0.12]
+For day 20, the inline solution is faster than the sliding window. (0.12 < 0.33)        [0.2]
+    What could be even faster is setting up the things in cells, not sure.
+Day 2 is frankly slow, like no way this shit takes ~0.04s                               [0.04]
+While I like the code for day 4 part 1, its not fast. I bet I could 0.034 -> 0.1        [0.02]
+While I could maybe improve day 6 part 2, its my baby. Im not changing it.
+For day 7, I could maybe inline the operations? Nah, just slough, which would be ugly AF.
+Day 10 part 1 is kinda slow at 0.111s. Given that we propagate a distance of <=10
+    Manhatten distance, we could probably speed this up while still abusing numpy.      [~0.05]
+    Just do the same thing, but limit it to the 19x19 square centered on that guy.
+    Alternatively, we could do bitset shenanigans.
+    Given the propagation limit, we can even have some overlap in bits, provided they are
+    >= 20 manhatten distance apart!
+Day 12 can maybe be improved? It takes a long time becase its grid.
