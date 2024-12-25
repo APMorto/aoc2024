@@ -47,7 +47,8 @@ day_information = {
     10: (day_10.part1_bitwise,  day_10.part2,       read_grid,          "day_10_hoof_it"),  # p1 bitwise ~2ms from 100ms
     #10: (day_10.part1,  day_10.part2,       read_grid,          "day_10_hoof_it"),
     11: (day_11.part1,  day_11.part2,       read_line,          "day_11_plutonian_pebbles"),
-    12: (day_12.part1,  day_12.part2,       read_grid,          "day_12_garden_groups"),
+    12: (day_12.both_parts_numpy,  day_12.both_parts_numpy, read_grid,          "day_12_garden_groups"),
+    #12: (day_12.part1,  day_12.part2,       read_grid,          "day_12_garden_groups"),
     13: (day_13.part1,  day_13.part2,       read_line_blocks,   "day_13_claw_contraption"),
     14: (day_14.part1,  None,               read_lines,         "day_14_restroom_redoubt"),
     15: (day_15.part1,  day_15.part2,       read_line_blocks,   "day_15_warehouse_woes"),
